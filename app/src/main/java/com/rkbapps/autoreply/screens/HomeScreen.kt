@@ -1,9 +1,15 @@
 package com.rkbapps.autoreply.screens
 
 import android.Manifest
+import android.annotation.SuppressLint
+import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
+import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
+import android.os.Bundle
 import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.compose.ManagedActivityResultLauncher
@@ -28,16 +34,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavHostController
+import com.notifyhistory.domain.manager.PermissionManagerImpl
+import com.notifyhistory.domain.manager.PermissionManagerImpl.Companion.EXTRA_FRAGMENT_ARG_KEY
+import com.notifyhistory.domain.manager.PermissionManagerImpl.Companion.EXTRA_SHOW_FRAGMENT_ARGUMENTS
+import com.rkbapps.autoreply.BuildConfig
+import com.rkbapps.autoreply.services.MyNotificationListenerService
+import androidx.core.net.toUri
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.rkbapps.autoreply.services.KeepAliveService
 
 
 @Composable
-fun HomeScreen(navController:NavHostController,) {
+fun HomeScreen(navController: NavHostController,viewModel: HomeScreenViewModel = hiltViewModel()) {
+    val isServiceRunning = viewModel.isServiceRunning.collectAsStateWithLifecycle()
 
     val context = LocalContext.current
-
-    val isPermissionGranted = ContextCompat.checkSelfPermission(
-        context, Manifest.permission.POST_NOTIFICATIONS
-    ) == PackageManager.PERMISSION_GRANTED
 
     val isRequestPermissionOpen = remember { mutableStateOf(false) }
 
@@ -63,34 +75,51 @@ fun HomeScreen(navController:NavHostController,) {
 
 
     Scaffold { innerPadding->
-        Column(modifier = Modifier.fillMaxSize().padding(innerPadding),
+        Column(modifier = Modifier
+            .fillMaxSize()
+            .padding(innerPadding),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Button(onClick = {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU){
-                    if (!isPermissionGranted){
-                        takePermission(permissionLauncher)
+                viewModel.isNotificationPermissionGranted()?.let {
+                    if (!it) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                            takePermission(permissionLauncher)
+                        }
                     }
                 }
             }) {
                 Text("Take Permission")
             }
             Button(onClick = {
-                val intent = Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
-                context.startActivity(intent)
+                viewModel.requestNotificationPermission()
             }) {
-                Text("Enable Notification Access")
+                if(viewModel.isNotificationListenPermissionEnable()){
+                    Text("Notification Access Enabled")
+                }else{
+                    Text("Enable Notification Access")
+                }
+
             }
             Button(onClick = {
-                context.startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
+                if(isServiceRunning.value){
+                    viewModel.stopService()
+                }else{
+                    viewModel.startService()
+                }
             }) {
-                Text("Start notification listener")
+                if(isServiceRunning.value){
+                    Text("Stop Service")
+                }else{
+                    Text("Start Service")
+                }
             }
         }
     }
 
 }
+
 
 @Composable
 fun RetakePermissionDialog(modifier: Modifier = Modifier,onOkClick:()->Unit) {
