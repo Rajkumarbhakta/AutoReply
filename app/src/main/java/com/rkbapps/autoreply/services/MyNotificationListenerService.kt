@@ -23,6 +23,7 @@ class MyNotificationListenerService @Inject constructor() : NotificationListener
     override fun onDestroy() {
         super.onDestroy()
         repository.scheduleRestartJob(this)
+        repository.onDestroy()
     }
 
 

@@ -10,11 +10,15 @@ import android.service.notification.StatusBarNotification
 import android.util.Log
 import com.rkbapps.autoreply.data.AutoReplyDao
 import com.rkbapps.autoreply.data.AutoReplyEntity
+import com.rkbapps.autoreply.data.PreferenceManager
 import com.rkbapps.autoreply.services.KeepAliveService
 import com.rkbapps.autoreply.services.RestartServiceJob
+import com.rkbapps.autoreply.utils.ReplyType
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -23,8 +27,8 @@ import javax.inject.Singleton
 class NotificationRepository @Inject constructor(
     @ApplicationContext private val applicationContext: Context,
     private val databaseReplyManager: DatabaseReplyManager,
-    private val smartReplyManager: SmartReplyManager
-
+    private val smartReplyManager: SmartReplyManager,
+    private val preferenceManager:PreferenceManager
 ) {
 
     companion object{
@@ -32,11 +36,46 @@ class NotificationRepository @Inject constructor(
         private val handledNotifications = mutableSetOf<String>()
     }
 
+    private val coroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+
+    var isAutoReplyEnabled = false
+        private set
+
+    var isSmartReplyEnabled = false
+        private set
+
+    var replyType = ReplyType.INDIVIDUAL
+        private set
+
+    init {
+        coroutineScope.launch {
+            preferenceManager.isAutoReplyEnableFlow.collect {
+                isAutoReplyEnabled = it
+            }
+        }
+        coroutineScope.launch {
+            preferenceManager.isSmartReplyEnableFlow.collect {
+                isSmartReplyEnabled = it
+            }
+        }
+        coroutineScope.launch {
+            preferenceManager.replyTypeFlow.collect {
+                replyType = it
+            }
+        }
+    }
+
+
+    fun onDestroy() {
+        coroutineScope.cancel() // Clean up when the class is no longer needed
+    }
+
+
 
 
     fun manageOnNotificationPosted(notificationService:NotificationListenerService,notification: StatusBarNotification){
         val data = NotificationParser.parseNotification(notification)
-        if(whatsappPackageName.contains(data.packageName) && KeepAliveService.isRunning.value ){
+        if(whatsappPackageName.contains(data.packageName) && KeepAliveService.isRunning.value && isAutoReplyEnabled){
             Log.d("NotificationListenerService", "onNotificationPosted : $data")
             val extras = notification.notification.extras
             val title = data.title?:"" // Sender name
@@ -51,16 +90,30 @@ class NotificationRepository @Inject constructor(
                     return
                 }
                 // If it's a personal message (not a group), reply
-                if (!text.contains(":")) {
+                if (replyType==ReplyType.INDIVIDUAL && !text.contains(":")) {
                     Log.d("AutoReply", "Personal message detected. Auto-replying...")
                     val replyMessage = getReplyMessage(message = text)
                     replyMessage?.let {
                         reply(notificationService,notification, replyMessage)
                     }
+                }else if (replyType == ReplyType.GROUP && text.contains(":")) {
+                    Log.d("AutoReply", "Group message detected. Auto-replying...")
+                    val replyMessage = getReplyMessage(message = text)
+                    replyMessage?.let {
+                        reply(notificationService,notification, replyMessage)
+                    }
+                }else{
+                    Log.d("AutoReply", "Group message detected. Auto-replying...")
+                    val replyMessage = getReplyMessage(message = text)
+                    replyMessage?.let {
+                        reply(notificationService,notification, replyMessage)
+                    }
                 }
+
             }
         }
     }
+
 
 
     fun getReplyMessage(message:String):String?{

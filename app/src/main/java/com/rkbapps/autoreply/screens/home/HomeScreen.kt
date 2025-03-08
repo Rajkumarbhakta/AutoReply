@@ -7,6 +7,7 @@ import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,6 +19,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.outlined.DeleteSweep
@@ -32,7 +34,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -44,6 +48,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -51,7 +56,7 @@ import androidx.navigation.NavHostController
 import com.rkbapps.autoreply.R
 import com.rkbapps.autoreply.data.AutoReplyEntity
 import com.rkbapps.autoreply.navigation.AddEditAutoReply
-import java.nio.file.WatchEvent
+import java.util.Locale
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -63,6 +68,9 @@ fun HomeScreen(navController: NavHostController, viewModel: HomeScreenViewModel 
     val isServiceRunning = viewModel.isServiceRunning.collectAsStateWithLifecycle()
 
     val autoReplyList = viewModel.autoReplyList.collectAsStateWithLifecycle()
+
+    val isAutoReplyEnable = viewModel.isAutoReplyEnabled.collectAsStateWithLifecycle()
+    val replyType = viewModel.replyType.collectAsStateWithLifecycle()
 
 
     val isRequestPermissionOpen = remember { mutableStateOf(false) }
@@ -137,16 +145,57 @@ fun HomeScreen(navController: NavHostController, viewModel: HomeScreenViewModel 
                     viewModel.requestNotificationPermission()
                 }
             }
-            PermissionRequiredUi(
+//            PermissionRequiredUi(
+//                text = if (isServiceRunning.value) "Stop Service" else "Start Service",
+//                buttonText = if (isServiceRunning.value) "Stop" else "Start"
+//            ) {
+//                if (isServiceRunning.value) {
+//                    viewModel.stopService()
+//                } else {
+//                    viewModel.startService()
+//                }
+//            }
+
+            PermissionRequiredUiWithSwitch(
                 text = if (isServiceRunning.value) "Stop Service" else "Start Service",
-                buttonText = if (isServiceRunning.value) "Stop" else "Start"
-            ) {
-                if (isServiceRunning.value) {
-                    viewModel.stopService()
-                } else {
-                    viewModel.startService()
+                isChecked = isServiceRunning.value,
+                onCheckedChange = {
+                    if (isServiceRunning.value) {
+                        viewModel.stopService()
+                    } else {
+                        viewModel.startService()
+                    }
                 }
+            )
+
+            PermissionRequiredUiWithSwitch(
+                text = "Enable Auto Reply",
+                isChecked = isAutoReplyEnable.value,
+                onCheckedChange = {
+                    viewModel.changeAutoReplyStatus()
+                }
+            )
+
+            Column (
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text("Reply to :", style = MaterialTheme.typography.titleMedium)
+                Row (
+                    modifier = Modifier.horizontalScroll(rememberScrollState()),
+                    verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween){
+                    viewModel.replyTypeList.forEach {
+                        RadioButton(
+                            selected = it == replyType.value,
+                            onClick = {
+                                viewModel.changeReplyType(it)
+                            }
+                        )
+                        Text(it.uppercase())
+                    }
+                }
+
             }
+
             Spacer(Modifier.height(5.dp))
             HorizontalDivider()
             Spacer(Modifier.height(5.dp))
@@ -201,6 +250,25 @@ fun PermissionRequiredUi(
         }
     }
 }
+@Composable
+fun PermissionRequiredUiWithSwitch(
+    modifier: Modifier = Modifier,
+    text: String,
+    isChecked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(text,style = MaterialTheme.typography.titleMedium)
+        Switch(
+            checked = isChecked,
+            onCheckedChange = onCheckedChange
+        )
+    }
+}
 
 @Composable
 fun AutoReplyUI(modifier: Modifier = Modifier, data: AutoReplyEntity,onEditClick:(AutoReplyEntity)-> Unit,onDeleteClick:(AutoReplyEntity)-> Unit) {
@@ -214,16 +282,16 @@ fun AutoReplyUI(modifier: Modifier = Modifier, data: AutoReplyEntity,onEditClick
         ) {
             Column(modifier.weight(1f)) {
                 Row {
-                    Text("Receive: ", style = MaterialTheme.typography.titleMedium)
-                    Text(data.receive)
+                    Text("Receive: ", style = MaterialTheme.typography.titleMedium,)
+                    Text(data.receive,maxLines = 2,overflow = TextOverflow.Ellipsis)
                 }
                 Row {
-                    Text("Send: ",style = MaterialTheme.typography.titleMedium)
-                    Text(data.send)
+                    Text("Send: ",style = MaterialTheme.typography.titleMedium,)
+                    Text(data.send, maxLines = 2,overflow = TextOverflow.Ellipsis)
                 }
                 Row {
-                    Text("Matching Type: ",style = MaterialTheme.typography.titleMedium)
-                    Text(data.matchingType.name)
+                    Text("Matching Type: ",style = MaterialTheme.typography.titleMedium,)
+                    Text(data.matchingType.name, overflow = TextOverflow.Ellipsis, maxLines = 1)
                 }
             }
             IconButton(
