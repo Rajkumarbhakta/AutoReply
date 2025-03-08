@@ -8,21 +8,30 @@ import android.content.Context
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import android.util.Log
+import com.rkbapps.autoreply.data.AutoReplyDao
+import com.rkbapps.autoreply.data.AutoReplyEntity
 import com.rkbapps.autoreply.services.KeepAliveService
 import com.rkbapps.autoreply.services.RestartServiceJob
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class NotificationRepository @Inject constructor(
     @ApplicationContext private val applicationContext: Context,
+    private val databaseReplyManager: DatabaseReplyManager,
+    private val smartReplyManager: SmartReplyManager
+
 ) {
 
     companion object{
         private val whatsappPackageName = listOf("com.whatsapp.w4b", "com.whatsapp")
         private val handledNotifications = mutableSetOf<String>()
     }
+
 
 
     fun manageOnNotificationPosted(notificationService:NotificationListenerService,notification: StatusBarNotification){
@@ -44,13 +53,22 @@ class NotificationRepository @Inject constructor(
                 // If it's a personal message (not a group), reply
                 if (!text.contains(":")) {
                     Log.d("AutoReply", "Personal message detected. Auto-replying...")
-                    if(text.startsWith("hello",ignoreCase = true)){
-                        reply(notificationService,notification, "Hello! there")
+                    val replyMessage = getReplyMessage(message = text)
+                    replyMessage?.let {
+                        reply(notificationService,notification, replyMessage)
                     }
                 }
             }
         }
     }
+
+
+    fun getReplyMessage(message:String):String?{
+       val reply =  databaseReplyManager.generateReply(message)
+        Log.d("NotificationListenerService","Smart reply : $reply")
+       return if(reply == GenericReplyManager.NO_REPLY) null else reply
+    }
+
 
     fun manageOnNotificationRemoved(notificationService:NotificationListenerService,notification: StatusBarNotification){
         val data = NotificationParser.parseNotification(notification)

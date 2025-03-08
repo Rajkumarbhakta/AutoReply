@@ -24,6 +24,7 @@ kotlinSerializationPlugin = "1.6.10"
 kotlinxSerializationJson = "1.7.3"
 #material icons
 materialIconsExtended = "1.7.8"
+smartReply = "17.0.4"
 workRuntimeKtx = "2.10.0"
 
 [libraries]
@@ -64,6 +65,7 @@ converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
 #kotlinSerialization
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
+smart-reply = { module = "com.google.mlkit:smart-reply", version.ref = "smartReply" }
 
 
 [plugins]

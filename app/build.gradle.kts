@@ -92,4 +92,8 @@ dependencies {
 
     //kotlinx serialization
     implementation(libs.kotlinx.serialization.json)
+
+    //smart reply
+    implementation (libs.smart.reply)
+
 }
