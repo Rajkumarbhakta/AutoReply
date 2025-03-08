@@ -14,6 +14,7 @@ import com.rkbapps.autoreply.R
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 class KeepAliveService : Service() {
 
@@ -21,7 +22,8 @@ class KeepAliveService : Service() {
     companion object {
         private const val NOTIFICATION_ID = 101
         private const val CHANNEL_ID = "keep_alive_channel"
-        val isRunning = MutableStateFlow(false)
+        private val _isRunning = MutableStateFlow(false)
+        val isRunning = _isRunning.asStateFlow()
     }
 
 
@@ -30,7 +32,7 @@ class KeepAliveService : Service() {
         super.onCreate()
         Log.d("KeepAliveService", "Service Created")
         startForegroundService()
-        isRunning.value = true
+        _isRunning.value = true
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -49,7 +51,7 @@ class KeepAliveService : Service() {
     override fun onDestroy() {
         super.onDestroy()
         Log.d("KeepAliveService", "Service Destroyed,")
-        isRunning.value = false
+        _isRunning.value = false
     }
 
     override fun onBind(intent: Intent?): IBinder? {

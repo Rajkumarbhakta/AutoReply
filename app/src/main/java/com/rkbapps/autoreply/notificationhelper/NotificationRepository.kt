@@ -1,6 +1,5 @@
 package com.rkbapps.autoreply.notificationhelper
 
-import android.app.Notification
 import android.app.PendingIntent
 import android.app.job.JobInfo
 import android.app.job.JobScheduler
@@ -9,6 +8,7 @@ import android.content.Context
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import android.util.Log
+import com.rkbapps.autoreply.services.KeepAliveService
 import com.rkbapps.autoreply.services.RestartServiceJob
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
@@ -16,7 +16,7 @@ import javax.inject.Singleton
 
 @Singleton
 class NotificationRepository @Inject constructor(
-    @ApplicationContext private val applicationContext: Context
+    @ApplicationContext private val applicationContext: Context,
 ) {
 
     companion object{
@@ -27,7 +27,7 @@ class NotificationRepository @Inject constructor(
 
     fun manageOnNotificationPosted(notificationService:NotificationListenerService,notification: StatusBarNotification){
         val data = NotificationParser.parseNotification(notification)
-        if(whatsappPackageName.contains(data.packageName)){
+        if(whatsappPackageName.contains(data.packageName) && KeepAliveService.isRunning.value ){
             Log.d("NotificationListenerService", "onNotificationPosted : $data")
             val extras = notification.notification.extras
             val title = data.title?:"" // Sender name
