@@ -2,7 +2,7 @@ package com.rkbapps.autoreply.di
 
 import android.content.Context
 import com.rkbapps.autoreply.manager.PermissionManager
-import com.notifyhistory.domain.manager.PermissionManagerImpl
+import com.rkbapps.autoreply.manager.PermissionManagerImpl
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

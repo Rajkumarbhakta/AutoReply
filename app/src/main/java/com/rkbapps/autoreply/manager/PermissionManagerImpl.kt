@@ -1,4 +1,4 @@
-package com.notifyhistory.domain.manager
+package com.rkbapps.autoreply.manager
 
 import android.annotation.SuppressLint
 import android.content.ComponentName
@@ -10,7 +10,6 @@ import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
 import android.provider.Settings
-import com.rkbapps.autoreply.manager.PermissionManager
 import com.rkbapps.autoreply.services.MyNotificationListenerService
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject

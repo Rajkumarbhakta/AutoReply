@@ -1,16 +1,7 @@
 package com.rkbapps.autoreply.screens
 
 import android.Manifest
-import android.annotation.SuppressLint
-import android.content.ComponentName
-import android.content.Context
-import android.content.Intent
-import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
-import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Build
-import android.os.Bundle
-import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -26,23 +17,14 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.core.content.ContextCompat
 import androidx.navigation.NavHostController
-import com.notifyhistory.domain.manager.PermissionManagerImpl
-import com.notifyhistory.domain.manager.PermissionManagerImpl.Companion.EXTRA_FRAGMENT_ARG_KEY
-import com.notifyhistory.domain.manager.PermissionManagerImpl.Companion.EXTRA_SHOW_FRAGMENT_ARGUMENTS
-import com.rkbapps.autoreply.BuildConfig
-import com.rkbapps.autoreply.services.MyNotificationListenerService
-import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.rkbapps.autoreply.services.KeepAliveService
 
 
 @Composable
