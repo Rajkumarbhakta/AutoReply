@@ -50,9 +50,9 @@ fun AddEditAutoReplyScreen(navController: NavHostController,viewModel: AddEditAu
     val autoReplyObject = viewModel.autoReplyObject
     val autoReplyAddStatus = viewModel.autoReplyAddStatus.collectAsStateWithLifecycle()
 
-    val sendMessage = remember { mutableStateOf("") }
-    val receiveMessage = remember { mutableStateOf("") }
-    val selectedMatchingType = remember { mutableStateOf(MatchingType.EXACT) }
+    val sendMessage = remember { mutableStateOf(autoReplyObject?.send?:"") }
+    val receiveMessage = remember { mutableStateOf(autoReplyObject?.receive?:"") }
+    val selectedMatchingType = remember { mutableStateOf(autoReplyObject?.matchingType?:MatchingType.EXACT) }
 
     val addEditErrorDialogShow = remember { mutableStateOf(false) }
 
@@ -93,13 +93,11 @@ fun AddEditAutoReplyScreen(navController: NavHostController,viewModel: AddEditAu
         topBar = {
             TopAppBar(
                 title = {
-
-                        if (autoReplyObject!=null){
-                            Text("Edit Auto Reply")
-                        }else{
-                            Text("Add Auto Reply")
-                        }
-
+                    if (autoReplyObject != null) {
+                        Text("Edit Auto Reply")
+                    } else {
+                        Text("Add Auto Reply")
+                    }
                 },
                 navigationIcon = {
                     IconButton(
@@ -122,7 +120,7 @@ fun AddEditAutoReplyScreen(navController: NavHostController,viewModel: AddEditAu
                                     send = sendMessage.value,
                                     matchingType = selectedMatchingType.value
                                 )
-                            viewModel.addNewAutoReply(data)
+                            if(autoReplyObject==null) viewModel.addNewAutoReply(data) else viewModel.addNewAutoReply(data, AddEditType.EDIT)
                         }
                     ) {
                         if(autoReplyAddStatus.value.isLoading){

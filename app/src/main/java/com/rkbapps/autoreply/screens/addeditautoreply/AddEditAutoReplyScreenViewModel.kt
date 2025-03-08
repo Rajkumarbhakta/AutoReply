@@ -31,9 +31,9 @@ class AddEditAutoReplyScreenViewModel @Inject constructor(
             null
         }
 
-    fun addNewAutoReply(autoReplyEntity: AutoReplyEntity){
+    fun addNewAutoReply(autoReplyEntity: AutoReplyEntity,addEditType: AddEditType = AddEditType.ADD){
         viewModelScope.launch(Dispatchers.IO) {
-            repository.addNewAutoReply(autoReplyEntity)
+            repository.addNewAutoReply(autoReplyEntity,addEditType)
         }
     }
 

@@ -18,7 +18,7 @@ class AddEditAutoReplyScreenRepository @Inject constructor(
     val autoReplyAddStatus = _autoReplyAddStatus.asStateFlow()
 
 
-    suspend fun addNewAutoReply(autoReplyEntity: AutoReplyEntity){
+    suspend fun addNewAutoReply(autoReplyEntity: AutoReplyEntity,addEditType: AddEditType = AddEditType.ADD){
         _autoReplyAddStatus.emit(UiState(isLoading = true))
         try {
             if(autoReplyEntity.send.isBlank()){
@@ -29,7 +29,11 @@ class AddEditAutoReplyScreenRepository @Inject constructor(
                 _autoReplyAddStatus.emit(UiState(isError = true, message = "Receive message cannot be empty"))
                 return
             }
-            autoReplyDao.insertAutoReply(autoReplyEntity)
+            if(addEditType== AddEditType.ADD){
+                autoReplyDao.insertAutoReply(autoReplyEntity)
+            }else{
+                autoReplyDao.updateAutoReply(autoReplyEntity)
+            }
             _autoReplyAddStatus.emit(UiState(data = autoReplyEntity))
 
         }catch (e: Exception){
@@ -37,4 +41,8 @@ class AddEditAutoReplyScreenRepository @Inject constructor(
         }
     }
 
+}
+
+enum class AddEditType{
+    ADD,EDIT
 }
