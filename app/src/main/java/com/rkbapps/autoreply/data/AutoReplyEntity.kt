@@ -14,8 +14,20 @@ data class AutoReplyEntity(
     val isActive: Boolean = true
 )
 
-enum class MatchingType{
-    CONTAINS,
-    EXACT,
-    STARTS_WITH,
+enum class MatchingType(
+    val value: String,
+    val meaning: String
+){
+    CONTAINS(
+        "Contains",
+        "Message includes any of the keywords"
+    ),
+    EXACT(
+        "Exact match",
+        "Message matches exactly with the keywords"
+    ),
+    STARTS_WITH(
+        "Starts with",
+        "Message starts with the keywords"
+    ),
 }

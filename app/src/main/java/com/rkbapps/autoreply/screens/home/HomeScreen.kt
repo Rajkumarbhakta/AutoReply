@@ -69,7 +69,6 @@ fun HomeScreen(navController: NavHostController, viewModel: HomeScreenViewModel 
 
     val autoReplyList = viewModel.autoReplyList.collectAsStateWithLifecycle()
 
-    val isAutoReplyEnable = viewModel.isAutoReplyEnabled.collectAsStateWithLifecycle()
     val replyType = viewModel.replyType.collectAsStateWithLifecycle()
 
 
@@ -104,12 +103,6 @@ fun HomeScreen(navController: NavHostController, viewModel: HomeScreenViewModel 
                 title = {
                     Text(stringResource(id = R.string.app_name))
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary,
-                    actionIconContentColor = MaterialTheme.colorScheme.onPrimary,
-                    )
-
             )
         },
         floatingActionButton = {
@@ -121,103 +114,112 @@ fun HomeScreen(navController: NavHostController, viewModel: HomeScreenViewModel 
         }
 
     ) { innerPadding ->
-        Column(
+
+        if (viewModel.isNotificationPermissionGranted() == false && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            PermissionRequiredUi(
+                text = "Notification permission",
+                buttonText = "Grant"
+            ) {
+                takePermission(permissionLauncher)
+            }
+        }
+        if (!viewModel.isNotificationListenPermissionEnable()) {
+            PermissionRequiredUi(
+                text = "Notification Access", buttonText = "Grant"
+
+            ) {
+                viewModel.requestNotificationPermission()
+            }
+        }
+
+
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
-                .padding(vertical = 8.dp, horizontal = 16.dp),
-
-            ) {
-
-            if (viewModel.isNotificationPermissionGranted() == false && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                PermissionRequiredUi(
-                    text = "Notification permission",
-                    buttonText = "Grant"
-                ) {
-                    takePermission(permissionLauncher)
-                }
-            }
-            if (!viewModel.isNotificationListenPermissionEnable()) {
-                PermissionRequiredUi(
-                    text = "Notification Access", buttonText = "Grant"
-
-                ) {
-                    viewModel.requestNotificationPermission()
-                }
-            }
-//            PermissionRequiredUi(
-//                text = if (isServiceRunning.value) "Stop Service" else "Start Service",
-//                buttonText = if (isServiceRunning.value) "Stop" else "Start"
-//            ) {
-//                if (isServiceRunning.value) {
-//                    viewModel.stopService()
-//                } else {
-//                    viewModel.startService()
-//                }
-//            }
-
-            PermissionRequiredUiWithSwitch(
-                text = if (isServiceRunning.value) "Stop Service" else "Start Service",
-                isChecked = isServiceRunning.value,
-                onCheckedChange = {
-                    if (isServiceRunning.value) {
-                        viewModel.stopService()
-                    } else {
-                        viewModel.startService()
+                .padding(horizontal = 16.dp),
+            contentPadding = innerPadding,
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            item {
+                PermissionRequiredUiWithSwitch(
+                    text = if (isServiceRunning.value) "Stop Service" else "Start Service",
+                    isChecked = isServiceRunning.value,
+                    onCheckedChange = {
+                        if (isServiceRunning.value) {
+                            viewModel.stopService()
+                        } else {
+                            viewModel.startService()
+                        }
                     }
-                }
-            )
+                )
+            }
+            item {
+                Column (
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text("Reply to :", style = MaterialTheme.typography.titleMedium)
+                    Row (
+                        modifier = Modifier.horizontalScroll(rememberScrollState()),
+                        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween){
+                        viewModel.replyTypeList.forEach {
+                            RadioButton(
+                                selected = it == replyType.value,
+                                onClick = {
+                                    viewModel.changeReplyType(it)
+                                }
+                            )
+                            Text(it.uppercase())
+                        }
+                    }
 
-            PermissionRequiredUiWithSwitch(
-                text = "Enable Auto Reply",
-                isChecked = isAutoReplyEnable.value,
-                onCheckedChange = {
-                    viewModel.changeAutoReplyStatus()
                 }
-            )
+            }
 
-            Column (
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text("Reply to :", style = MaterialTheme.typography.titleMedium)
-                Row (
-                    modifier = Modifier.horizontalScroll(rememberScrollState()),
-                    verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween){
-                    viewModel.replyTypeList.forEach {
-                        RadioButton(
-                            selected = it == replyType.value,
-                            onClick = {
-                                viewModel.changeReplyType(it)
-                            }
-                        )
-                        Text(it.uppercase())
+            item {
+                HorizontalDivider()
+            }
+
+            when {
+                autoReplyList.value.isLoading -> {
+                    item {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator()
+                        }
                     }
                 }
 
-            }
-
-            Spacer(Modifier.height(5.dp))
-            HorizontalDivider()
-            Spacer(Modifier.height(5.dp))
-            if (autoReplyList.value.isLoading) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
+                autoReplyList.value.isError -> {
+                    item {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(text = autoReplyList.value.message ?: "Something went wrong")
+                        }
+                    }
                 }
-            }
-            if (autoReplyList.value.isError) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(text = autoReplyList.value.message ?: "Something went wrong")
-                }
-            }
 
-            if (autoReplyList.value.data != null && !autoReplyList.value.isLoading && !autoReplyList.value.isError) {
-                LazyColumn {
+                autoReplyList.value.data.isNullOrEmpty() -> {
+                    item {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(text = "No Auto Replies found")
+                        }
+                    }
+                }
+
+                !autoReplyList.value.data.isNullOrEmpty() -> {
                     items(items = autoReplyList.value.data!!, key = {
                         it.id
                     }) {
                         AutoReplyUI(data = it, onEditClick = {
-                            viewModel.onEditClick(navController,it)
-                        },onDeleteClick ={
+                            viewModel.onEditClick(navController, it)
+                        }, onDeleteClick = {
                             viewModel.onDeleteClick(it)
                         })
                     }
@@ -278,7 +280,9 @@ fun AutoReplyUI(modifier: Modifier = Modifier, data: AutoReplyEntity,onEditClick
             .padding(vertical = 4.dp)
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(8.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp)
         ) {
             Column(modifier.weight(1f)) {
                 Row {

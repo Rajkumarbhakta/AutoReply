@@ -38,14 +38,8 @@ class HomeScreenViewModel @Inject constructor(
         ReplyType.BOTH
     )
 
-    val isAutoReplyEnabled = preferenceManager.isAutoReplyEnableFlow
-        .stateIn(viewModelScope, SharingStarted.Lazily, false)
-
     val replyType = preferenceManager.replyTypeFlow
         .stateIn(viewModelScope, SharingStarted.Lazily, ReplyType.INDIVIDUAL)
-
-
-
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
@@ -75,11 +69,6 @@ class HomeScreenViewModel @Inject constructor(
         }
     }
 
-    fun changeAutoReplyStatus(){
-        viewModelScope.launch {
-            preferenceManager.changeAutoReplyStatus(!isAutoReplyEnabled.value)
-        }
-    }
 
     fun changeReplyType(type:String){
         viewModelScope.launch {

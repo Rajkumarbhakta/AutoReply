@@ -37,5 +37,9 @@ class AddEditAutoReplyScreenViewModel @Inject constructor(
         }
     }
 
+    companion object{
+        const val MAX_CHARACTER_LIMIT = 160
+    }
+
 
 }

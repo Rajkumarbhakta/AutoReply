@@ -3,6 +3,7 @@ package com.rkbapps.autoreply.notificationhelper
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.os.Parcel
 import android.os.Parcelable
@@ -18,12 +19,12 @@ class Action : Parcelable {
     private val isQuickReply: Boolean
     private val remoteInputs = ArrayList<RemoteInputParcel>()
 
-    constructor(`in`: Parcel) {
-        text = `in`.readString()
-        packageName = `in`.readString()
-        p = `in`.readParcelable(PendingIntent::class.java.classLoader)
-        isQuickReply = `in`.readByte().toInt() != 0
-        `in`.readTypedList(remoteInputs, RemoteInputParcel)
+    constructor(value: Parcel) {
+        text = value.readString()
+        packageName = value.readString()
+        p = value.readTypedParcelableCompat<PendingIntent>()
+        isQuickReply = value.readByte().toInt() != 0
+        value.readTypedList(remoteInputs, RemoteInputParcel)
     }
 
     override fun writeToParcel(dest: Parcel, flags: Int) {
@@ -52,7 +53,7 @@ class Action : Parcelable {
         val bundle = Bundle()
         val actualInputs = ArrayList<RemoteInput>()
         for (input in remoteInputs) {
-            Log.d("Action::sendReply","RemoteInput: ${input.label}", )
+            Log.d("Action::sendReply","RemoteInput: ${input.label}",)
             bundle.putCharSequence(input.resultKey, msg)
             val builder = RemoteInput.Builder(input.resultKey.toString())
             builder.setLabel(input.label)
@@ -82,4 +83,15 @@ class Action : Parcelable {
     }
 
 
+
+
+}
+
+inline fun <reified T : Parcelable> Parcel.readTypedParcelableCompat(): T? {
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        readParcelable(T::class.java.classLoader, T::class.java)
+    } else {
+        @Suppress("DEPRECATION")
+        readParcelable(T::class.java.classLoader)
+    }
 }

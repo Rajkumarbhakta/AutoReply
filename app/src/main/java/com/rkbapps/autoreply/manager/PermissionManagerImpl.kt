@@ -14,6 +14,7 @@ import com.rkbapps.autoreply.services.MyNotificationListenerService
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
+import androidx.core.net.toUri
 
 
 @Singleton
@@ -64,7 +65,7 @@ class PermissionManagerImpl @Inject constructor(
     @SuppressLint("BatteryLife")
     override fun requestBatteryPermissions() {
         val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
-        intent.data = Uri.parse("package:${context.packageName}")
+        intent.data = "package:${context.packageName}".toUri()
         intent.flags = FLAG_ACTIVITY_NEW_TASK
         context.startActivity(intent)
     }
