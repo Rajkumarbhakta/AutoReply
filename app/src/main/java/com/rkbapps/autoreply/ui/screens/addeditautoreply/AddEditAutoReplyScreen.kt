@@ -1,6 +1,9 @@
 package com.rkbapps.autoreply.ui.screens.addeditautoreply
 
-import android.annotation.SuppressLint
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,11 +13,22 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
+import androidx.compose.material.icons.outlined.CalendarMonth
+import androidx.compose.material.icons.outlined.Group
+import androidx.compose.material.icons.outlined.PersonAddAlt1
+import androidx.compose.material.icons.outlined.PersonRemoveAlt1
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -26,26 +40,302 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import com.google.gson.Gson
-import com.rkbapps.autoreply.data.AutoReplyDao
 import com.rkbapps.autoreply.data.AutoReplyEntity
 import com.rkbapps.autoreply.data.MatchingType
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
+import com.rkbapps.autoreply.ui.composables.CommonTextField
+import com.rkbapps.autoreply.ui.theme.primaryColor
+import com.rkbapps.autoreply.ui.theme.secondaryColor
+import com.rkbapps.autoreply.ui.theme.surfaceColor
+import com.rkbapps.autoreply.utils.ReplyType
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AddEditAutoReplyScreen(navController: NavHostController) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Auto Reply Rule") },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color.Transparent
+                ),
+                navigationIcon = {
+                    IconButton(
+                        onClick = {
+                            navController.navigateUp()
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Default.ArrowBack,
+                            contentDescription = "Back"
+                        )
+                    }
+                }
+            )
+
+        },
+        containerColor = surfaceColor
+    ) { innerPadding ->
+
+        val ruleName = remember { mutableStateOf("") }
+        val triggerCondition = remember { mutableStateOf("") }
+        val autoReplyMessage = remember { mutableStateOf("") }
+        val selectedAudience = remember { mutableStateOf(ReplyType.INDIVIDUAL) }
+
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+            contentPadding = innerPadding
+        ) {
+            item {
+                Spacer(Modifier.height(10.dp))
+            }
+            item {
+                CommonTextField(
+                    text = ruleName.value,
+                    labelText = "Rule Name",
+                    placeholderText = "Enter a name for this rule",
+                    maxLines = 1,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    ruleName.value = it
+                }
+            }
+            item {
+                CommonTextField(
+                    text = autoReplyMessage.value,
+                    labelText = "Trigger Condition",
+                    placeholderText = "Enter keywords or phrases",
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    autoReplyMessage.value = it
+                }
+            }
+            item {
+                CommonTextField(
+                    text = triggerCondition.value,
+                    labelText = "Auto Reply Message",
+                    placeholderText = "Enter keywords or phrases",
+                    maxLines = 1,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp),
+                ) {
+                    triggerCondition.value = it
+                }
+            }
+            item {
+                Text(
+                    "Target Audience",
+                    style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold)
+                )
+            }
+            item {
+                LazyRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    item {
+                        Spacer(Modifier.width(10.dp))
+                    }
+                    items(
+                        items = ReplyType.entries
+                    ) {
+                        TargetAudienceItems(
+                            selected = it == selectedAudience.value,
+                            type = it
+                        ) { type ->
+                            selectedAudience.value = it
+                        }
+                    }
+                    item {
+                        Spacer(Modifier.width(10.dp))
+                    }
+                }
+            }
+            item {
+                AnimatedVisibility(visible = selectedAudience.value == ReplyType.INDIVIDUAL) {
+                    CardItems(
+                        icon = Icons.Outlined.PersonRemoveAlt1,
+                        title = "Exclude Contacts",
+                        subtitle = "Select contacts to exclude from this auto reply",
+                    )
+                }
+            }
+            item {
+                AnimatedVisibility(visible = selectedAudience.value == ReplyType.INDIVIDUAL) {
+                    CardItems(
+                        icon = Icons.Outlined.PersonAddAlt1,
+                        title = "Include Contacts",
+                        subtitle = "Select contacts to include in this auto reply",
+                    ){
+
+                    }
+                }
+            }
+            item {
+                Text(
+                    "Schedule",
+                    style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold)
+                )
+            }
+            item {
+                CardItems(
+                    icon = Icons.Outlined.CalendarMonth,
+                    title = "Schedule",
+                    subtitle = "Set a schedule for this auto reply",
+                ){
+
+                }
+            }
+            item {
+                Row (
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ){
+                    Button(
+                        onClick = {},
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = secondaryColor,
+                            contentColor = Color.Black
+                        )
+                    ) {
+                        Text("Delete")
+                    }
+                    Button(
+                        onClick = {},
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = primaryColor,
+                        )
+                    ) {
+                        Text("Save")
+                    }
+                }
+            }
+        }
+
+    }
+
+}
+
+
+@Composable
+fun CardItems(
+    modifier: Modifier = Modifier,
+    icon: ImageVector,
+    title: String,
+    subtitle: String,
+    onClick: () -> Unit = {}
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 10.dp)
+        ,
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .size(50.dp)
+                .clip(RoundedCornerShape(10.dp))
+                .background(color = secondaryColor),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = "Group Icon"
+            )
+        }
+
+        Column(
+            modifier = Modifier.weight(1f)
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleSmall,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Text(
+                text = subtitle,
+                style = MaterialTheme.typography.labelSmall.copy(
+                    fontWeight = FontWeight.Light,
+                    color = Color(0xff5C738A)
+                ),
+            )
+        }
+
+        IconButton(
+            onClick = onClick
+        ) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
+                contentDescription = "Forward Icon",
+            )
+        }
+
+    }
+
+}
+
+
+@Composable
+fun TargetAudienceItems(
+    modifier: Modifier = Modifier,
+    selected: Boolean = false,
+    type: ReplyType = ReplyType.INDIVIDUAL,
+    onSelect: (ReplyType) -> Unit = { }
+) {
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(12.dp))
+            .border(
+                width = 1.dp,
+                color = if (selected) primaryColor else secondaryColor,
+                shape = RoundedCornerShape(12.dp)
+            )
+            .clickable {
+                onSelect(type)
+            }, contentAlignment = Alignment.Center) {
+        Text(
+            type.value.uppercase(),
+            style = MaterialTheme.typography.labelMedium,
+            modifier = Modifier.padding(10.dp)
+        )
+    }
+}
+
+
+@Preview
+@Composable
+fun AddEditAutoReplyScreenPreview() {
+    AddEditAutoReplyScreen(navController = rememberNavController())
+}
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -69,7 +359,8 @@ fun AddEditAutoReplyScreen(
     LaunchedEffect(autoReplyAddStatus.value) {
         if (autoReplyAddStatus.value.data != null
             && !autoReplyAddStatus.value.isLoading
-            && !autoReplyAddStatus.value.isError) {
+            && !autoReplyAddStatus.value.isError
+        ) {
             navController.navigateUp()
         }
         if (autoReplyAddStatus.value.isError) {
@@ -103,11 +394,13 @@ fun AddEditAutoReplyScreen(
     Scaffold(
         topBar = {
             val title = remember {
-                if (autoReplyObject != null) { "Edit Auto Reply" } else {
+                if (autoReplyObject != null) {
+                    "Edit Auto Reply"
+                } else {
                     "Add Auto Reply"
                 }
             }
-            AppBar( title = title ) {
+            AppBar(title = title) {
                 navController.navigateUp()
             }
         },
@@ -116,7 +409,7 @@ fun AddEditAutoReplyScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp),
-            ){
+            ) {
                 Button(
                     modifier = Modifier.fillMaxWidth(),
                     onClick = {
@@ -210,7 +503,9 @@ fun AddEditAutoReplyScreen(
                         sendMessage.value = it
                     }
                 },
-                modifier = Modifier.fillMaxWidth().height(200.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp),
                 placeholder = {
                     Text(text = "Enter your auto reply message")
                 },
@@ -255,11 +550,11 @@ fun TitleSubtitleCombo(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppBar(title:String, onBackPressed: () -> Unit) {
+fun AppBar(title: String, onBackPressed: () -> Unit) {
     TopAppBar(
         title = { Text(title) },
         navigationIcon = {
-            IconButton (
+            IconButton(
                 onClick = onBackPressed,
             ) {
                 Icon(
@@ -279,7 +574,8 @@ fun MatchingTypeListUi(
 ) {
     Row(
         modifier = modifier,
-        verticalAlignment = Alignment.CenterVertically) {
+        verticalAlignment = Alignment.CenterVertically
+    ) {
         RadioButton(
             selected = selectedMatchingType == type,
             onClick = onSelect
@@ -301,54 +597,5 @@ fun MatchingTypeListUi(
         }
     }
 
-
-}
-
-
-
-@SuppressLint("ViewModelConstructorInComposable")
-@Preview
-@Composable
-fun AddEditPreview(){
-    val navController = rememberNavController()
-    val viewModel = AddEditAutoReplyScreenViewModel(
-        repository = AddEditAutoReplyScreenRepository(
-            autoReplyDao = AutoReplyDaoFake()
-        ),
-        saveStateHandle = SavedStateHandle(),
-        gson = Gson()
-    )
-
-    AddEditAutoReplyScreen(navController = navController, viewModel = viewModel)
-}
-
-class AutoReplyDaoFake(): AutoReplyDao{
-    override suspend fun insertAutoReply(autoReply: AutoReplyEntity) {
-        //TODO("Not yet implemented")
-    }
-
-    override suspend fun deleteAutoReply(autoReply: AutoReplyEntity) {
-        //TODO("Not yet implemented")
-    }
-
-    override suspend fun updateAutoReply(autoReply: AutoReplyEntity) {
-        //TODO("Not yet implemented")
-    }
-
-    override suspend fun getAutoReplyById(id: Int): AutoReplyEntity? =null
-
-    override fun getAllAutoReplies(): Flow<List<AutoReplyEntity>> = flowOf(emptyList())
-
-    override suspend fun deleteAutoReplyById(id: Int) {
-        //TODO("Not yet implemented")
-    }
-
-    override suspend fun updateAutoReplyActiveStatus(id: Int, isActive: Boolean) {
-        //TODO("Not yet implemented")
-    }
-
-    override fun getActiveAutoReplies(): Flow<List<AutoReplyEntity>> = flowOf(emptyList())
-
-    override fun getInactiveAutoReplies(): Flow<List<AutoReplyEntity>> = flowOf(emptyList())
 
 }
