@@ -55,7 +55,7 @@ class NotificationRepository @Inject constructor(
         }
         coroutineScope.launch {
             preferenceManager.replyTypeFlow.collect {
-                replyType = it
+                replyType = ReplyType.valueOf(it)
             }
         }
     }

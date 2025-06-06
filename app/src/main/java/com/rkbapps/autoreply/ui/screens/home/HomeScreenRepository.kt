@@ -1,4 +1,4 @@
-package com.rkbapps.autoreply.screens.home
+package com.rkbapps.autoreply.ui.screens.home
 
 import android.Manifest
 import android.content.Context

@@ -36,13 +36,13 @@ class PreferenceManager @Inject constructor(
     val isSmartReplyEnableFlow:Flow<Boolean> = context.dataStore.data
         .catch { emit(emptyPreferences()) }
         .map {
-        it[IS_SMART_REPLY_ENABLED] ?: false
+            it[IS_SMART_REPLY_ENABLED] == true
     }
 
     val replyTypeFlow:Flow<String> = context.dataStore.data
         .catch { emit(emptyPreferences()) }
         .map {
-        it[REPLY_TYPE]?: ReplyType.INDIVIDUAL
+        it[REPLY_TYPE]?: ReplyType.INDIVIDUAL.value
     }
 
 

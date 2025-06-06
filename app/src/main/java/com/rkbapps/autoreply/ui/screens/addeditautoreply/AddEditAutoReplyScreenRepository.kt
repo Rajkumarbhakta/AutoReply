@@ -1,4 +1,4 @@
-package com.rkbapps.autoreply.screens.addeditautoreply
+package com.rkbapps.autoreply.ui.screens.addeditautoreply
 
 import com.rkbapps.autoreply.data.AutoReplyDao
 import com.rkbapps.autoreply.data.AutoReplyEntity

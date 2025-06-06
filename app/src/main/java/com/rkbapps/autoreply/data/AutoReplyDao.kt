@@ -33,12 +33,10 @@ interface AutoReplyDao {
     suspend fun updateAutoReplyActiveStatus(id: Int, isActive: Boolean)
 
     @Query("SELECT * FROM auto_reply WHERE isActive = 1")
-     fun getActiveAutoReplies(): Flow<List<AutoReplyEntity>>
+    fun getActiveAutoReplies(): Flow<List<AutoReplyEntity>>
 
     @Query("SELECT * FROM auto_reply WHERE isActive = 0")
-     fun getInactiveAutoReplies(): Flow<List<AutoReplyEntity>>
-
-
+    fun getInactiveAutoReplies(): Flow<List<AutoReplyEntity>>
 
 
 }

@@ -1,7 +1,10 @@
 package com.rkbapps.autoreply.utils
 
-object ReplyType {
-    const val GROUP = "group"
-    const val INDIVIDUAL = "individual"
-    const val BOTH = "both"
+enum class ReplyType(
+    val value: String,
+    val meaning: String = "Reply to $value messages"
+) {
+    GROUP("group"),
+    INDIVIDUAL("individual"),
+    BOTH("both", meaning = "Reply to both group and individual messages")
 }

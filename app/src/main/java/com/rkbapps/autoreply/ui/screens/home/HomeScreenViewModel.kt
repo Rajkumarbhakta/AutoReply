@@ -1,21 +1,18 @@
-package com.rkbapps.autoreply.screens.home
+package com.rkbapps.autoreply.ui.screens.home
 
 import android.content.Context
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import com.google.gson.Gson
 import com.rkbapps.autoreply.data.AutoReplyEntity
 import com.rkbapps.autoreply.data.PreferenceManager
-import com.rkbapps.autoreply.navigation.AddEditAutoReply
+import com.rkbapps.autoreply.navigation.NavigationRoutes.AddEditAutoReply
 import com.rkbapps.autoreply.utils.ReplyType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject

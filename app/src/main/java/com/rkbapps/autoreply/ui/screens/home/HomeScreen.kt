@@ -1,15 +1,12 @@
-package com.rkbapps.autoreply.screens.home
+package com.rkbapps.autoreply.ui.screens.home
 
 import android.Manifest
-import android.app.AlertDialog
 import android.os.Build
 import android.widget.Toast
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,18 +15,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.outlined.DeleteSweep
-import androidx.compose.material.icons.outlined.EditRoad
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -38,30 +29,29 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.rkbapps.autoreply.R
 import com.rkbapps.autoreply.data.AutoReplyEntity
-import com.rkbapps.autoreply.navigation.AddEditAutoReply
+import com.rkbapps.autoreply.navigation.NavigationRoutes.AddEditAutoReply
+import com.rkbapps.autoreply.ui.screens.home.composables.AutoReplyUI
+import com.rkbapps.autoreply.ui.screens.home.composables.DeleteConfirmationDialog
+import com.rkbapps.autoreply.ui.screens.home.composables.PermissionRequiredUi
+import com.rkbapps.autoreply.ui.screens.home.composables.PermissionRequiredUiWithSwitch
+import com.rkbapps.autoreply.ui.screens.home.composables.RetakePermissionDialog
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -103,11 +93,7 @@ fun HomeScreen(navController: NavHostController, viewModel: HomeScreenViewModel 
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(stringResource(id = R.string.app_name))
-                },
-            )
+            TopBar()
         },
         floatingActionButton = {
             FloatingActionButton(onClick = {
@@ -136,7 +122,7 @@ fun HomeScreen(navController: NavHostController, viewModel: HomeScreenViewModel 
             }
         }
 
-        if (deletableReply.value!=null){
+        if (deletableReply.value != null) {
             DeleteConfirmationDialog(
                 onDismiss = {
                     deletableReply.value = null
@@ -178,7 +164,10 @@ fun HomeScreen(navController: NavHostController, viewModel: HomeScreenViewModel 
                             .padding(16.dp),
                     ) {
                         Text("Reply Settings", style = MaterialTheme.typography.titleMedium)
-                        Text("Configure who receives auto replies", style = MaterialTheme.typography.labelMedium)
+                        Text(
+                            "Configure who receives auto replies",
+                            style = MaterialTheme.typography.labelMedium
+                        )
                         Row(
                             modifier = Modifier.horizontalScroll(rememberScrollState()),
                             verticalAlignment = Alignment.CenterVertically,
@@ -188,10 +177,10 @@ fun HomeScreen(navController: NavHostController, viewModel: HomeScreenViewModel 
                                 RadioButton(
                                     selected = it == replyType.value,
                                     onClick = {
-                                        viewModel.changeReplyType(it)
+                                        viewModel.changeReplyType(it.value)
                                     }
                                 )
-                                Text(it.uppercase())
+                                Text(it.value.uppercase())
                             }
                         }
 
@@ -203,7 +192,10 @@ fun HomeScreen(navController: NavHostController, viewModel: HomeScreenViewModel 
             }
             item {
                 Text("Active Rules", style = MaterialTheme.typography.titleMedium)
-                Text("Manage your auto reply configurations", style = MaterialTheme.typography.labelMedium)
+                Text(
+                    "Manage your auto reply configurations",
+                    style = MaterialTheme.typography.labelMedium
+                )
             }
             when {
                 autoReplyList.value.isLoading -> {
@@ -257,182 +249,15 @@ fun HomeScreen(navController: NavHostController, viewModel: HomeScreenViewModel 
 }
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PermissionRequiredUi(
-    modifier: Modifier = Modifier,
-    text: String,
-    buttonText: String,
-    onButtonClick: () -> Unit
-) {
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text(text)
-        OutlinedButton(
-            onClick = onButtonClick
-        ) {
-            Text(buttonText)
-        }
-    }
-}
-
-@Composable
-fun PermissionRequiredUiWithSwitch(
-    modifier: Modifier = Modifier,
-    text: String,
-    subtitle: String = "Auto replies are currently enabled",
-    isChecked: Boolean,
-    onCheckedChange: (Boolean) -> Unit
-) {
-    val color = animateColorAsState(
-        if (isChecked) Color.Green else Color.Red
-    )
-    ElevatedCard {
-        Row(
-            modifier = modifier
-                .fillMaxWidth()
-                .padding(10.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-
-
-            Row(
-                modifier = Modifier.weight(1f),
-                horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.Start)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .padding(top = 5.dp)
-                        .size(10.dp)
-                        .clip(CircleShape)
-                        .background(color = color.value)
-
-                )
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text,
-                        style = MaterialTheme.typography.titleMedium,
-                    )
-                    Text(
-                        subtitle,
-                        style = MaterialTheme.typography.labelMedium,
-                    )
-                }
-            }
-            Switch(
-                checked = isChecked,
-                onCheckedChange = onCheckedChange
-            )
-        }
-    }
-}
-
-@Composable
-fun AutoReplyUI(
-    modifier: Modifier = Modifier,
-    data: AutoReplyEntity,
-    onEditClick: (AutoReplyEntity) -> Unit,
-    onDeleteClick: (AutoReplyEntity) -> Unit
-) {
-    Card(
-        modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp)
-        ) {
-            Column(modifier.weight(1f)) {
-                Text(
-                    "Trigger",
-                    color = MaterialTheme.colorScheme.primary,
-                    style = MaterialTheme.typography.labelMedium
-                )
-                Text(
-                    "${data.matchingType.value} : '${data.receive}'",
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Text(
-                    "Response",
-                    color = MaterialTheme.colorScheme.primary,
-                    style = MaterialTheme.typography.labelMedium
-                )
-                Text(data.send, maxLines = 2, overflow = TextOverflow.Ellipsis)
-            }
-            IconButton(
-                onClick = {
-                    onEditClick(data)
-                }
-            ) {
-                Icon(Icons.Outlined.EditRoad, contentDescription = "edit")
-            }
-            IconButton(
-                onClick = {
-                    onDeleteClick(data)
-                }
-            ) {
-                Icon(Icons.Outlined.DeleteSweep, contentDescription = "delete")
-            }
-        }
-    }
-}
-
-
-@Composable
-fun DeleteConfirmationDialog(
-    modifier: Modifier = Modifier,
-    onDismiss: () -> Unit,
-    onConfirm: () -> Unit,
-) {
-    AlertDialog(
-        modifier = modifier,
+fun TopBar(modifier: Modifier = Modifier) {
+    TopAppBar(
         title = {
-            Text("Delete Auto Reply")
+            Text(stringResource(id = R.string.app_name))
         },
-        text = {
-            Text("Are you sure you want to delete this auto reply? This action cannot be undone.")
-        },
-        confirmButton = {
-            OutlinedButton(onClick = onConfirm) {
-                Text("Delete")
-            }
-        },
-        dismissButton = {
-            Button(onClick = onDismiss) {
-                Text("Cancel")
-            }
-        },
-        onDismissRequest = onDismiss
     )
 }
-
-@Composable
-fun RetakePermissionDialog(modifier: Modifier = Modifier, onOkClick: () -> Unit) {
-    AlertDialog(
-        text = {
-            Text("Notification permission required for this feature to work")
-        },
-        title = {
-            Text("Permission required")
-        },
-        confirmButton = {
-            TextButton(onClick = {
-                onOkClick()
-            }) {
-                Text("Ok")
-            }
-        },
-        onDismissRequest = {},
-        modifier = modifier
-    )
-}
-
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 fun takePermission(permissionLauncher: ManagedActivityResultLauncher<String, Boolean>) {

@@ -1,4 +1,4 @@
-package com.rkbapps.autoreply.screens.addeditautoreply
+package com.rkbapps.autoreply.ui.screens.addeditautoreply
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Arrangement
@@ -127,7 +127,7 @@ fun AddEditAutoReplyScreen(
                         ) ?: AutoReplyEntity(
                             receive = receiveMessage.value,
                             send = sendMessage.value,
-                            matchingType = selectedMatchingType.value
+                            matchingType = selectedMatchingType.value,
                         )
                         if (autoReplyObject == null) viewModel.addNewAutoReply(data) else viewModel.addNewAutoReply(
                             data,

@@ -1,4 +1,4 @@
-package com.rkbapps.autoreply.screens.addeditautoreply
+package com.rkbapps.autoreply.ui.screens.addeditautoreply
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -6,10 +6,9 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.google.gson.Gson
 import com.rkbapps.autoreply.data.AutoReplyEntity
-import com.rkbapps.autoreply.navigation.AddEditAutoReply
+import com.rkbapps.autoreply.navigation.NavigationRoutes.AddEditAutoReply
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
