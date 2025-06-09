@@ -42,7 +42,7 @@ fun AutoReplyUI(
                     style = MaterialTheme.typography.labelMedium
                 )
                 Text(
-                    "${data.matchingType.value} : '${data.receive}'",
+                    "${data.matchingType.value} : '${data.trigger}'",
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -51,7 +51,7 @@ fun AutoReplyUI(
                     color = MaterialTheme.colorScheme.primary,
                     style = MaterialTheme.typography.labelMedium
                 )
-                Text(data.send, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                Text(data.reply, maxLines = 2, overflow = TextOverflow.Ellipsis)
             }
             IconButton(
                 onClick = {

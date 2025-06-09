@@ -1,4 +1,4 @@
-package com.rkbapps.autoreply.ui.screens.addeditautoreply
+package com.rkbapps.autoreply.ui.screens.addeditautoreply.addEdit
 
 import com.rkbapps.autoreply.data.AutoReplyDao
 import com.rkbapps.autoreply.data.AutoReplyEntity
@@ -21,11 +21,11 @@ class AddEditAutoReplyScreenRepository @Inject constructor(
     suspend fun addNewAutoReply(autoReplyEntity: AutoReplyEntity,addEditType: AddEditType = AddEditType.ADD){
         _autoReplyAddStatus.emit(UiState(isLoading = true))
         try {
-            if(autoReplyEntity.send.isBlank()){
+            if(autoReplyEntity.reply.isBlank()){
                 _autoReplyAddStatus.emit(UiState(isError = true, message = "Send message cannot be empty"))
                 return
             }
-            if(autoReplyEntity.receive.isBlank()){
+            if(autoReplyEntity.trigger.isBlank()){
                 _autoReplyAddStatus.emit(UiState(isError = true, message = "Receive message cannot be empty"))
                 return
             }

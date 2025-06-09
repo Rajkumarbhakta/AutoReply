@@ -61,24 +61,24 @@ open class DatabaseReplyManager @Inject constructor(
 
     override fun generateReply(message: String): String {
         autoReplyList.find {
-            message.contains(it.receive, ignoreCase = true)
+            message.contains(it.trigger, ignoreCase = true)
         }?.let {
             when (it.matchingType) {
                 MatchingType.EXACT -> {
-                    if (message.equals(it.receive, ignoreCase = true)) {
-                        return it.send
+                    if (message.equals(it.trigger, ignoreCase = true)) {
+                        return it.reply
                     }
                 }
 
                 MatchingType.STARTS_WITH -> {
-                    if (message.startsWith(it.receive, ignoreCase = true)) {
-                        return it.send
+                    if (message.startsWith(it.trigger, ignoreCase = true)) {
+                        return it.reply
                     }
                 }
 
                 MatchingType.CONTAINS -> {
-                    if (message.contains(it.receive, ignoreCase = true)) {
-                        return it.send
+                    if (message.contains(it.trigger, ignoreCase = true)) {
+                        return it.reply
                     }
                 }
             }

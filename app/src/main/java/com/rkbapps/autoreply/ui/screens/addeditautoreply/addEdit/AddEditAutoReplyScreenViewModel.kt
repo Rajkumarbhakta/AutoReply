@@ -1,4 +1,4 @@
-package com.rkbapps.autoreply.ui.screens.addeditautoreply
+package com.rkbapps.autoreply.ui.screens.addeditautoreply.addEdit
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel

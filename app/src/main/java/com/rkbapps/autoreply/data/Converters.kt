@@ -18,6 +18,17 @@ class Converters {
     }
 
     @TypeConverter
+    fun fromReplySchedule(value: ReplySchedule?): String? {
+        return value?.let { gson.toJson(it) }
+    }
+
+    @TypeConverter
+    fun toReplySchedule(value: String?): ReplySchedule? {
+        return value?.let { gson.fromJson(it, ReplySchedule::class.java) }
+    }
+
+
+    @TypeConverter
     fun fromReplyScheduleList(value: List<ReplySchedule>): String {
         return gson.toJson(value)
     }
@@ -25,6 +36,17 @@ class Converters {
     @TypeConverter
     fun toReplyScheduleList(value: String): List<ReplySchedule> {
         val listType = object : TypeToken<List<ReplySchedule>>() {}.type
+        return gson.fromJson(value, listType)
+    }
+
+    @TypeConverter
+    fun fromDaysOfWeekList(value: List<DaysOfWeek>): String {
+        return gson.toJson(value)
+    }
+
+    @TypeConverter
+    fun toDaysOfWeekList(value: String): List<DaysOfWeek> {
+        val listType = object : TypeToken<List<DaysOfWeek>>() {}.type
         return gson.fromJson(value, listType)
     }
 

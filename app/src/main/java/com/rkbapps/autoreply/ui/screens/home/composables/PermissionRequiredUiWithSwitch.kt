@@ -41,7 +41,6 @@ fun PermissionRequiredUiWithSwitch(
             horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
 
-
             Row(
                 modifier = Modifier.weight(1f),
                 horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.Start)

@@ -7,6 +7,7 @@ import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -31,13 +33,16 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.LifecycleOwner
@@ -52,6 +57,7 @@ import com.rkbapps.autoreply.ui.screens.home.composables.DeleteConfirmationDialo
 import com.rkbapps.autoreply.ui.screens.home.composables.PermissionRequiredUi
 import com.rkbapps.autoreply.ui.screens.home.composables.PermissionRequiredUiWithSwitch
 import com.rkbapps.autoreply.ui.screens.home.composables.RetakePermissionDialog
+import com.rkbapps.autoreply.ui.screens.rules.RulesItem
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -59,7 +65,6 @@ import com.rkbapps.autoreply.ui.screens.home.composables.RetakePermissionDialog
 fun HomeScreen(navController: NavHostController, viewModel: HomeScreenViewModel = hiltViewModel()) {
 
     val context = LocalContext.current
-    val lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
 
     val isServiceRunning = viewModel.isServiceRunning.collectAsStateWithLifecycle()
     val autoReplyList = viewModel.autoReplyList.collectAsStateWithLifecycle()
@@ -67,18 +72,11 @@ fun HomeScreen(navController: NavHostController, viewModel: HomeScreenViewModel 
 
     val isRequestPermissionOpen = remember { mutableStateOf(false) }
     val deletableReply = remember { mutableStateOf<AutoReplyEntity?>(null) }
-    val isNotificationPermissionGranted = remember(viewModel.isNotificationPermissionGranted()) {
-        mutableStateOf(viewModel.isNotificationPermissionGranted() == false)
-    }
-    val notificationListenPermissionGranted =
-        remember(viewModel.isNotificationPermissionGranted()) {
-            mutableStateOf(viewModel.isNotificationPermissionGranted())
-        }
+    val listState = rememberLazyListState()
 
     val permissionLauncher =
-        rememberLauncherForActivityResult(
-            contract = ActivityResultContracts.RequestPermission(),
-            onResult = { granted ->
+        rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission(),
+        onResult = { granted ->
                 if (granted) {
                     isRequestPermissionOpen.value = false
                     Toast.makeText(context, "Notification permission granted", Toast.LENGTH_SHORT)
@@ -102,14 +100,6 @@ fun HomeScreen(navController: NavHostController, viewModel: HomeScreenViewModel 
         topBar = {
             TopBar()
         },
-        floatingActionButton = {
-            FloatingActionButton(onClick = {
-                navController.navigate(route = AddEditAutoReply())
-            }) {
-                Icon(imageVector = Icons.Default.Add, contentDescription = "add new auto reply")
-            }
-        }
-
     ) { innerPadding ->
 
         if (deletableReply.value != null) {
@@ -129,12 +119,13 @@ fun HomeScreen(navController: NavHostController, viewModel: HomeScreenViewModel 
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 16.dp),
+            state = listState,
             contentPadding = innerPadding,
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
 
             item {
-                if (isNotificationPermissionGranted.value && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                if (viewModel.isNotificationPermissionGranted() == true && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                     PermissionRequiredUi(
                         text = "Notification permission",
                         buttonText = "Grant"
@@ -144,21 +135,18 @@ fun HomeScreen(navController: NavHostController, viewModel: HomeScreenViewModel 
                 }
             }
             item {
-                notificationListenPermissionGranted.value?.let {
-                    if (!it) {
+                    if (!viewModel.isNotificationListenPermissionEnable()) {
                         PermissionRequiredUi(
                             text = "Notification Access", buttonText = "Grant"
                         ) {
                             viewModel.requestNotificationPermission()
                         }
                     }
-                }
+
             }
-
-
             item {
                 PermissionRequiredUiWithSwitch(
-                    text = if (isServiceRunning.value) "Stop Service" else "Start Service",
+                    text = "Auto Reply",
                     subtitle = if (isServiceRunning.value) "Auto replies are currently enabled" else "Auto replies are currently disabled",
                     isChecked = isServiceRunning.value,
                     onCheckedChange = {
@@ -205,13 +193,19 @@ fun HomeScreen(navController: NavHostController, viewModel: HomeScreenViewModel 
                 HorizontalDivider()
             }
             item {
-                Text("Active Rules", style = MaterialTheme.typography.titleMedium)
+                Text("Active Rules",
+                    style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold))
                 Text(
                     "Manage your auto reply configurations",
-                    style = MaterialTheme.typography.labelMedium
+                    style = MaterialTheme.typography.titleSmall
                 )
             }
-            when {
+
+            items(count = 20,) {
+                RulesItem()
+            }
+
+           /* when {
                 autoReplyList.value.isLoading -> {
                     item {
                         Box(
@@ -246,7 +240,7 @@ fun HomeScreen(navController: NavHostController, viewModel: HomeScreenViewModel 
                 }
 
                 !autoReplyList.value.data.isNullOrEmpty() -> {
-                    items(items = autoReplyList.value.data!!, key = {
+                    *//*items(items = autoReplyList.value.data!!, key = {
                         it.id
                     }) {
                         AutoReplyUI(data = it, onEditClick = {
@@ -254,9 +248,11 @@ fun HomeScreen(navController: NavHostController, viewModel: HomeScreenViewModel 
                         }, onDeleteClick = {
                             deletableReply.value = it
                         })
-                    }
+                    }*//*
+
+
                 }
-            }
+            }*/
         }
     }
 
@@ -270,6 +266,9 @@ fun TopBar(modifier: Modifier = Modifier) {
         title = {
             Text(stringResource(id = R.string.app_name))
         },
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = Color.Transparent
+        ),
     )
 }
 

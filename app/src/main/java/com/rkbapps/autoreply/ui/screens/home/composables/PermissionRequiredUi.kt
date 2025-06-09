@@ -3,6 +3,7 @@ package com.rkbapps.autoreply.ui.screens.home.composables
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -21,7 +22,7 @@ fun PermissionRequiredUi(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(text)
+        Text(text, style = MaterialTheme.typography.titleMedium)
         OutlinedButton(
             onClick = onButtonClick
         ) {

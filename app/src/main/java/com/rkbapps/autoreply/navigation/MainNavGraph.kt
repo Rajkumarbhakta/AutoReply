@@ -6,7 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.rkbapps.autoreply.navigation.NavigationRoutes.AddEditAutoReply
 import com.rkbapps.autoreply.navigation.NavigationRoutes.Home
-import com.rkbapps.autoreply.ui.screens.addeditautoreply.AddEditAutoReplyScreen
+import com.rkbapps.autoreply.ui.screens.addeditautoreply.addEdit.AddEditAutoReplyScreen
 import com.rkbapps.autoreply.ui.screens.history.SentAutoRepliesScreen
 import com.rkbapps.autoreply.ui.screens.home.HomeScreen
 import com.rkbapps.autoreply.ui.screens.rules.AutoReplyRulesScreen

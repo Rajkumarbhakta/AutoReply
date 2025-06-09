@@ -1,4 +1,4 @@
-package com.rkbapps.autoreply.ui.screens.addeditautoreply
+package com.rkbapps.autoreply.ui.screens.addeditautoreply.addEdit
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
@@ -23,7 +23,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.outlined.CalendarMonth
-import androidx.compose.material.icons.outlined.Group
 import androidx.compose.material.icons.outlined.PersonAddAlt1
 import androidx.compose.material.icons.outlined.PersonRemoveAlt1
 import androidx.compose.material3.AlertDialog
@@ -348,8 +347,8 @@ fun AddEditAutoReplyScreen(
     val autoReplyObject = viewModel.autoReplyObject
     val autoReplyAddStatus = viewModel.autoReplyAddStatus.collectAsStateWithLifecycle()
 
-    val sendMessage = remember { mutableStateOf(autoReplyObject?.send ?: "") }
-    val receiveMessage = remember { mutableStateOf(autoReplyObject?.receive ?: "") }
+    val sendMessage = remember { mutableStateOf(autoReplyObject?.reply ?: "") }
+    val receiveMessage = remember { mutableStateOf(autoReplyObject?.trigger ?: "") }
     val selectedMatchingType =
         remember { mutableStateOf(autoReplyObject?.matchingType ?: MatchingType.EXACT) }
 
@@ -414,12 +413,12 @@ fun AddEditAutoReplyScreen(
                     modifier = Modifier.fillMaxWidth(),
                     onClick = {
                         val data = autoReplyObject?.copy(
-                            receive = receiveMessage.value,
-                            send = sendMessage.value,
+                            trigger = receiveMessage.value,
+                            reply = sendMessage.value,
                             matchingType = selectedMatchingType.value
                         ) ?: AutoReplyEntity(
-                            receive = receiveMessage.value,
-                            send = sendMessage.value,
+                            trigger = receiveMessage.value,
+                            reply = sendMessage.value,
                             matchingType = selectedMatchingType.value,
                         )
                         if (autoReplyObject == null) viewModel.addNewAutoReply(data) else viewModel.addNewAutoReply(
