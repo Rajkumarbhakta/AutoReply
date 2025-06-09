@@ -14,24 +14,24 @@ import java.util.UUID
 import javax.inject.Inject
 
 interface ReplyManager {
-    fun generateReply(message:String):String
+    fun generateReply(message: String): String
 }
 
-open class GenericReplyManager(): ReplyManager{
+open class GenericReplyManager() : ReplyManager {
 
-    companion object{
+    companion object {
         const val NO_REPLY = "Sorry I don't understand";
     }
 
     override fun generateReply(message: String): String {
-        if(message.equals("hello",ignoreCase = true)){
-            return  "Hi! how can i help you?"
+        if (message.equals("hello", ignoreCase = true)) {
+            return "Hi! how can i help you?"
         }
-        if(message.equals("hi",ignoreCase = true)){
-            return  "Hi! how can i help you?"
+        if (message.equals("hi", ignoreCase = true)) {
+            return "Hi! how can i help you?"
         }
-        if(message.equals("how are you",ignoreCase = true)){
-            return  "I am fine, thank you!"
+        if (message.equals("how are you", ignoreCase = true)) {
+            return "I am fine, thank you!"
         }
         return NO_REPLY
     }
@@ -39,7 +39,7 @@ open class GenericReplyManager(): ReplyManager{
 
 open class DatabaseReplyManager @Inject constructor(
     private val dataBase: AutoReplyDao
-): GenericReplyManager() {
+) : GenericReplyManager() {
 
     private var autoReplyList = listOf<AutoReplyEntity>()
 
@@ -47,14 +47,14 @@ open class DatabaseReplyManager @Inject constructor(
         getAllAutoReply()
     }
 
-    fun getAllAutoReply(){
+    fun getAllAutoReply() {
         try {
             CoroutineScope(Dispatchers.IO).launch {
                 dataBase.getAllAutoReplies().collect {
                     autoReplyList = it
                 }
             }
-        }catch (e: Exception){
+        } catch (e: Exception) {
             e.printStackTrace()
         }
     }
@@ -88,37 +88,45 @@ open class DatabaseReplyManager @Inject constructor(
 
 }
 
-class SmartReplyManager @Inject constructor (
+class SmartReplyManager @Inject constructor(
     private val dataBase: AutoReplyDao
-): DatabaseReplyManager(dataBase){
+) : DatabaseReplyManager(dataBase) {
     val smartReplyGenerator = SmartReply.getClient()
     fun generateSmartReply(message: String): String? {
         val chatHistory = ArrayList<TextMessage>()
-        chatHistory.add(TextMessage.createForRemoteUser(message, System.currentTimeMillis(),UUID.randomUUID().toString()))
-        var reply:String? = null
-       smartReplyGenerator.suggestReplies(chatHistory).continueWith { task ->
-           when(task.result.status){
-               SmartReplySuggestionResult.STATUS_NOT_SUPPORTED_LANGUAGE ->{
-                   Log.d("SmartReplyManager","Not supported language")
-                   reply =  super.generateReply(message)
-               }
-               SmartReplySuggestionResult.STATUS_NO_REPLY ->{
-                   Log.d("SmartReplyManager","No reply")
-                   reply =  super.generateReply(message)
-               }
-               SmartReplySuggestionResult.STATUS_SUCCESS->{
-                   Log.d("SmartReplyManager","Success ${task.result.suggestions.first().text}")
-                   reply = task.result.suggestions.first().text
-               }
-           }
-       }.addOnFailureListener {
-           Log.d("SmartReplyManager","Error ${it.message}")
-           reply = super.generateReply(message)
-       }
+        chatHistory.add(
+            TextMessage.createForRemoteUser(
+                message,
+                System.currentTimeMillis(),
+                UUID.randomUUID().toString()
+            )
+        )
+        var reply: String? = null
+        smartReplyGenerator.suggestReplies(chatHistory).continueWith { task ->
+            when (task.result.status) {
+                SmartReplySuggestionResult.STATUS_NOT_SUPPORTED_LANGUAGE -> {
+                    Log.d("SmartReplyManager", "Not supported language")
+                    reply = super.generateReply(message)
+                }
+
+                SmartReplySuggestionResult.STATUS_NO_REPLY -> {
+                    Log.d("SmartReplyManager", "No reply")
+                    reply = super.generateReply(message)
+                }
+
+                SmartReplySuggestionResult.STATUS_SUCCESS -> {
+                    Log.d("SmartReplyManager", "Success ${task.result.suggestions.first().text}")
+                    reply = task.result.suggestions.first().text
+                }
+            }
+        }.addOnFailureListener {
+            Log.d("SmartReplyManager", "Error ${it.message}")
+            reply = super.generateReply(message)
+        }
         return reply
     }
 
     override fun generateReply(message: String): String {
-        return  generateSmartReply(message)?:super.generateReply(message)
+        return generateSmartReply(message) ?: super.generateReply(message)
     }
 }

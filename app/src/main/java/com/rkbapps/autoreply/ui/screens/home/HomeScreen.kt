@@ -20,22 +20,18 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -44,6 +40,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.rkbapps.autoreply.R
@@ -61,22 +59,21 @@ import com.rkbapps.autoreply.ui.screens.home.composables.RetakePermissionDialog
 fun HomeScreen(navController: NavHostController, viewModel: HomeScreenViewModel = hiltViewModel()) {
 
     val context = LocalContext.current
+    val lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
 
     val isServiceRunning = viewModel.isServiceRunning.collectAsStateWithLifecycle()
     val autoReplyList = viewModel.autoReplyList.collectAsStateWithLifecycle()
     val replyType = viewModel.replyType.collectAsStateWithLifecycle()
 
     val isRequestPermissionOpen = remember { mutableStateOf(false) }
-
     val deletableReply = remember { mutableStateOf<AutoReplyEntity?>(null) }
-
     val isNotificationPermissionGranted = remember(viewModel.isNotificationPermissionGranted()) {
         mutableStateOf(viewModel.isNotificationPermissionGranted() == false)
     }
-
-    val notificationListenPermissionGranted = remember(viewModel.isNotificationPermissionGranted()) {
-        mutableStateOf(viewModel.isNotificationPermissionGranted())
-    }
+    val notificationListenPermissionGranted =
+        remember(viewModel.isNotificationPermissionGranted()) {
+            mutableStateOf(viewModel.isNotificationPermissionGranted())
+        }
 
     val permissionLauncher =
         rememberLauncherForActivityResult(
@@ -84,9 +81,11 @@ fun HomeScreen(navController: NavHostController, viewModel: HomeScreenViewModel 
             onResult = { granted ->
                 if (granted) {
                     isRequestPermissionOpen.value = false
-                    Toast.makeText(context, "Notification permission granted", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Notification permission granted", Toast.LENGTH_SHORT)
+                        .show()
                 } else {
-                    Toast.makeText(context, "Notification permission denied", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Notification permission denied", Toast.LENGTH_SHORT)
+                        .show()
                 }
             }
         )
