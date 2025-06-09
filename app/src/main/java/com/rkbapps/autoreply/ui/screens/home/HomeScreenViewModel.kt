@@ -13,6 +13,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -36,7 +37,7 @@ class HomeScreenViewModel @Inject constructor(
     )
 
     val replyType = preferenceManager.replyTypeFlow
-        .stateIn(viewModelScope, SharingStarted.Lazily, ReplyType.INDIVIDUAL)
+        .stateIn(viewModelScope, SharingStarted.Lazily, ReplyType.INDIVIDUAL.name)
 
     init {
         viewModelScope.launch(Dispatchers.IO) {

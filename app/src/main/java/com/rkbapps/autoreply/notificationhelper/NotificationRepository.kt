@@ -55,7 +55,7 @@ class NotificationRepository @Inject constructor(
         }
         coroutineScope.launch {
             preferenceManager.replyTypeFlow.collect {
-                replyType = ReplyType.valueOf(it)
+                replyType = ReplyType.valueOf(it.uppercase())
             }
         }
     }

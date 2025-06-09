@@ -34,6 +34,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -68,17 +70,23 @@ fun HomeScreen(navController: NavHostController, viewModel: HomeScreenViewModel 
 
     val deletableReply = remember { mutableStateOf<AutoReplyEntity?>(null) }
 
+    val isNotificationPermissionGranted = remember(viewModel.isNotificationPermissionGranted()) {
+        mutableStateOf(viewModel.isNotificationPermissionGranted() == false)
+    }
+
+    val notificationListenPermissionGranted = remember(viewModel.isNotificationPermissionGranted()) {
+        mutableStateOf(viewModel.isNotificationPermissionGranted())
+    }
+
     val permissionLauncher =
         rememberLauncherForActivityResult(
             contract = ActivityResultContracts.RequestPermission(),
             onResult = { granted ->
                 if (granted) {
                     isRequestPermissionOpen.value = false
-                    Toast.makeText(context, "Notification permission granted", Toast.LENGTH_SHORT)
-                        .show()
+                    Toast.makeText(context, "Notification permission granted", Toast.LENGTH_SHORT).show()
                 } else {
-                    Toast.makeText(context, "Notification permission denied", Toast.LENGTH_SHORT)
-                        .show()
+                    Toast.makeText(context, "Notification permission denied", Toast.LENGTH_SHORT).show()
                 }
             }
         )
@@ -105,23 +113,6 @@ fun HomeScreen(navController: NavHostController, viewModel: HomeScreenViewModel 
 
     ) { innerPadding ->
 
-        if (viewModel.isNotificationPermissionGranted() == false && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            PermissionRequiredUi(
-                text = "Notification permission",
-                buttonText = "Grant"
-            ) {
-                takePermission(permissionLauncher)
-            }
-        }
-        if (!viewModel.isNotificationListenPermissionEnable()) {
-            PermissionRequiredUi(
-                text = "Notification Access", buttonText = "Grant"
-
-            ) {
-                viewModel.requestNotificationPermission()
-            }
-        }
-
         if (deletableReply.value != null) {
             DeleteConfirmationDialog(
                 onDismiss = {
@@ -142,6 +133,30 @@ fun HomeScreen(navController: NavHostController, viewModel: HomeScreenViewModel 
             contentPadding = innerPadding,
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
+
+            item {
+                if (isNotificationPermissionGranted.value && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    PermissionRequiredUi(
+                        text = "Notification permission",
+                        buttonText = "Grant"
+                    ) {
+                        takePermission(permissionLauncher)
+                    }
+                }
+            }
+            item {
+                notificationListenPermissionGranted.value?.let {
+                    if (!it) {
+                        PermissionRequiredUi(
+                            text = "Notification Access", buttonText = "Grant"
+                        ) {
+                            viewModel.requestNotificationPermission()
+                        }
+                    }
+                }
+            }
+
+
             item {
                 PermissionRequiredUiWithSwitch(
                     text = if (isServiceRunning.value) "Stop Service" else "Start Service",
@@ -175,12 +190,12 @@ fun HomeScreen(navController: NavHostController, viewModel: HomeScreenViewModel 
                         ) {
                             viewModel.replyTypeList.forEach {
                                 RadioButton(
-                                    selected = it == replyType.value,
+                                    selected = it.name == replyType.value,
                                     onClick = {
-                                        viewModel.changeReplyType(it.value)
+                                        viewModel.changeReplyType(it.name)
                                     }
                                 )
-                                Text(it.value.uppercase())
+                                Text(it.name.uppercase())
                             }
                         }
 

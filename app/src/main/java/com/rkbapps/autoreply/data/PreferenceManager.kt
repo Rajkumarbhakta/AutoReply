@@ -42,7 +42,7 @@ class PreferenceManager @Inject constructor(
     val replyTypeFlow:Flow<String> = context.dataStore.data
         .catch { emit(emptyPreferences()) }
         .map {
-        it[REPLY_TYPE]?: ReplyType.INDIVIDUAL.value
+        it[REPLY_TYPE]?: ReplyType.INDIVIDUAL.name
     }
 
 

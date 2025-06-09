@@ -44,15 +44,14 @@ class HomeScreenRepository @Inject constructor(
     }
 
 
-
-    fun isNotificationPermissionGranted(context: Context): Boolean?{
-       return if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU){
-           ContextCompat.checkSelfPermission(
+    fun isNotificationPermissionGranted(context: Context): Boolean? {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            ContextCompat.checkSelfPermission(
                 context, Manifest.permission.POST_NOTIFICATIONS
             ) == PackageManager.PERMISSION_GRANTED
-        }else{
+        } else {
             null
-       }
+        }
     }
 
     fun requestNotificationPermission() = permissionManager.requestNotificationPermission()
