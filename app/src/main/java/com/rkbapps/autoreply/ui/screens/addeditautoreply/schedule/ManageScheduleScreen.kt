@@ -27,17 +27,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.rkbapps.autoreply.data.DaysOfWeek
 import com.rkbapps.autoreply.ui.composables.CommonTimePicker
+import com.rkbapps.autoreply.ui.screens.addeditautoreply.AddEditAutoReplyScreenViewModel
 import com.rkbapps.autoreply.ui.theme.surfaceColor
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ManageScheduleScreen(navController: NavHostController) {
+fun ManageScheduleScreen(
+    navController: NavHostController,
+    viewModel: AddEditAutoReplyScreenViewModel
+) {
     Scaffold(
         topBar = {
             TopAppBar(

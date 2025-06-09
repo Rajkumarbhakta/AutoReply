@@ -1,5 +1,6 @@
 package com.rkbapps.autoreply.services
 
+import android.annotation.SuppressLint
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -35,6 +36,7 @@ class KeepAliveService : Service() {
         _isRunning.value = true
     }
 
+    @SuppressLint("ForegroundServiceType")
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.d("KeepAliveService", "Service Started")
         if (intent?.action == "STOP_SERVICE") {
@@ -58,10 +60,11 @@ class KeepAliveService : Service() {
         return null
     }
 
+    @SuppressLint("ForegroundServiceType")
     private fun startForegroundService() {
         val notification = createNotification()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) { // Android 14+
-            startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
+            startForeground(NOTIFICATION_ID, notification)
         } else {
             startForeground(NOTIFICATION_ID, notification)
         }

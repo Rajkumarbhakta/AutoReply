@@ -25,23 +25,18 @@ import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.PersonAddAlt1
 import androidx.compose.material.icons.outlined.PersonRemoveAlt1
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -52,19 +47,16 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavHost
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.rkbapps.autoreply.data.AutoReplyEntity
 import com.rkbapps.autoreply.data.MatchingType
 import com.rkbapps.autoreply.navigation.NavigationRoutes
 import com.rkbapps.autoreply.ui.composables.CommonTextField
+import com.rkbapps.autoreply.ui.screens.addeditautoreply.AddEditAutoReplyScreenViewModel
 import com.rkbapps.autoreply.ui.screens.addeditautoreply.choose_contact.ChooseContactScreen
 import com.rkbapps.autoreply.ui.screens.addeditautoreply.schedule.ManageScheduleScreen
 import com.rkbapps.autoreply.ui.theme.primaryColor
@@ -75,19 +67,26 @@ import com.rkbapps.autoreply.utils.ReplyType
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddEditAutoReplyScreen(navController: NavHostController) {
+fun AddEditAutoReplyScreen(
+    navController: NavHostController,
+    viewModel: AddEditAutoReplyScreenViewModel = hiltViewModel()
+) {
 
     val navControllerAddEdit = rememberNavController()
 
-    NavHost(navController = navControllerAddEdit, startDestination = NavigationRoutes.AddEdit){
-        composable <NavigationRoutes.AddEdit>{
-            AddEditScreen(navControllerAddEdit = navControllerAddEdit, navController = navController)
+    NavHost(navController = navControllerAddEdit, startDestination = NavigationRoutes.AddEdit) {
+        composable<NavigationRoutes.AddEdit> {
+            AddEditScreen(
+                navControllerAddEdit = navControllerAddEdit,
+                navController = navController,
+                viewModel = viewModel
+            )
         }
         composable<NavigationRoutes.ChooseContact> {
-            ChooseContactScreen(navController = navControllerAddEdit)
+            ChooseContactScreen(navController = navControllerAddEdit,viewModel = viewModel)
         }
         composable<NavigationRoutes.ManageSchedule> {
-            ManageScheduleScreen(navController=navControllerAddEdit)
+            ManageScheduleScreen(navController = navControllerAddEdit,viewModel = viewModel)
         }
     }
 }
@@ -95,7 +94,11 @@ fun AddEditAutoReplyScreen(navController: NavHostController) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddEditScreen(navControllerAddEdit: NavHostController,navController: NavHostController,) {
+fun AddEditScreen(
+    navControllerAddEdit: NavHostController,
+    navController: NavHostController,
+    viewModel: AddEditAutoReplyScreenViewModel
+) {
     Scaffold(
         topBar = {
             TopAppBar(
@@ -206,7 +209,7 @@ fun AddEditScreen(navControllerAddEdit: NavHostController,navController: NavHost
                         icon = Icons.Outlined.PersonRemoveAlt1,
                         title = "Exclude Contacts",
                         subtitle = "Select contacts to exclude from this auto reply",
-                    ){
+                    ) {
                         navControllerAddEdit.navigate(NavigationRoutes.ChooseContact)
                     }
                 }
@@ -217,7 +220,7 @@ fun AddEditScreen(navControllerAddEdit: NavHostController,navController: NavHost
                         icon = Icons.Outlined.PersonAddAlt1,
                         title = "Include Contacts",
                         subtitle = "Select contacts to include in this auto reply",
-                    ){
+                    ) {
                         navControllerAddEdit.navigate(NavigationRoutes.ChooseContact)
                     }
                 }
@@ -233,16 +236,16 @@ fun AddEditScreen(navControllerAddEdit: NavHostController,navController: NavHost
                     icon = Icons.Outlined.CalendarMonth,
                     title = "Schedule",
                     subtitle = "Set a schedule for this auto reply",
-                ){
+                ) {
                     navControllerAddEdit.navigate(NavigationRoutes.ManageSchedule)
                 }
             }
             item {
-                Row (
+                Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
-                ){
+                ) {
                     Button(
                         onClick = {},
                         colors = ButtonDefaults.buttonColors(
@@ -279,8 +282,7 @@ fun CardItems(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 10.dp)
-        ,
+            .padding(vertical = 10.dp),
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -346,7 +348,8 @@ fun TargetAudienceItems(
             )
             .clickable {
                 onSelect(type)
-            }, contentAlignment = Alignment.Center) {
+            }, contentAlignment = Alignment.Center
+    ) {
         Text(
             type.value.uppercase(),
             style = MaterialTheme.typography.labelMedium,
@@ -356,14 +359,8 @@ fun TargetAudienceItems(
 }
 
 
-@Preview
-@Composable
-fun AddEditAutoReplyScreenPreview() {
-    AddEditAutoReplyScreen(navController = rememberNavController())
-}
 
-
-@OptIn(ExperimentalMaterial3Api::class)
+/*@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddEditAutoReplyScreen(
     navController: NavHostController,
@@ -549,7 +546,7 @@ fun AddEditAutoReplyScreen(
             )
         }
     }
-}
+}*/
 
 
 @Composable

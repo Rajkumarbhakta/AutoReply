@@ -12,7 +12,7 @@
 
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROCESSING"/>
 
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
 
@@ -53,7 +53,7 @@
 
         <service
             android:name=".services.KeepAliveService"
-            android:foregroundServiceType="dataSync"
+            android:foregroundServiceType="mediaProcessing"
             android:permission="android.permission.FOREGROUND_SERVICE"
             android:exported="false" />
 

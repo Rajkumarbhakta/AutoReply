@@ -1,15 +1,22 @@
 package com.rkbapps.autoreply.ui.screens.addeditautoreply.choose_contact
 
+import android.Manifest
+import android.widget.Toast
+import androidx.activity.compose.ManagedActivityResultLauncher
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -24,25 +31,60 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
+import coil3.compose.AsyncImage
+import com.rkbapps.autoreply.models.Contact
 import com.rkbapps.autoreply.ui.composables.CommonSearchBar
+import com.rkbapps.autoreply.ui.screens.addeditautoreply.AddEditAutoReplyScreenViewModel
 import com.rkbapps.autoreply.ui.theme.surfaceColor
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ChooseContactScreen(navController: NavHostController) {
+fun ChooseContactScreen(
+    navController: NavHostController,
+    viewModel: AddEditAutoReplyScreenViewModel
+) {
 
     val query = remember { mutableStateOf("") }
+    val context = LocalContext.current
+
+
+    val contacts = viewModel.contacts.collectAsStateWithLifecycle()
+
+    val permissionLauncher =
+        rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission(),
+            onResult = { granted ->
+                if (granted) {
+                    viewModel.loadContacts()
+                    Toast.makeText(context, "Notification permission granted", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(context, "Notification permission denied", Toast.LENGTH_SHORT).show()
+                }
+            }
+        )
+
+
+    LaunchedEffect(key1 = viewModel.isContactPermissionGranted(context)) {
+        if (viewModel.isContactPermissionGranted(context) == false) {
+            takePermission(permissionLauncher)
+        }else{
+            viewModel.loadContacts()
+        }
+    }
+
+
 
     Scaffold(
         topBar = {
@@ -98,8 +140,8 @@ fun ChooseContactScreen(navController: NavHostController) {
                 )
             }
 
-            items(20) {
-                ContactItem()
+            items(contacts.value) {
+                ContactItem(contact = it)
             }
 
         }
@@ -111,7 +153,7 @@ fun ChooseContactScreen(navController: NavHostController) {
 
 
 @Composable
-fun ContactItem(modifier: Modifier = Modifier) {
+fun ContactItem(modifier: Modifier = Modifier,contact: Contact) {
 
     Row(
         modifier = modifier,
@@ -124,13 +166,19 @@ fun ContactItem(modifier: Modifier = Modifier) {
                 .size(50.dp)
                 .clip(CircleShape)
                 .background(color = Color.Cyan)
-        )
+        ){
+            AsyncImage(
+                model = contact.photoUri,
+                contentDescription = "Contact Image",
+                modifier = Modifier.fillMaxSize()
+            )
+        }
         Column {
             Text(
-                "Ethan Carter",
+                contact.name?:"",
                 style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
             )
-            Text("+91 1234567890", style = MaterialTheme.typography.bodySmall)
+            Text(contact.phoneNumber, style = MaterialTheme.typography.bodySmall)
         }
         Spacer(Modifier.weight(1f))
         Checkbox(
@@ -140,4 +188,8 @@ fun ContactItem(modifier: Modifier = Modifier) {
     }
 
 
+}
+
+fun takePermission(permissionLauncher: ManagedActivityResultLauncher<String, Boolean>) {
+    permissionLauncher.launch(Manifest.permission.READ_CONTACTS)
 }
