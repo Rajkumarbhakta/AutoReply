@@ -56,11 +56,17 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavHost
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.rkbapps.autoreply.data.AutoReplyEntity
 import com.rkbapps.autoreply.data.MatchingType
+import com.rkbapps.autoreply.navigation.NavigationRoutes
 import com.rkbapps.autoreply.ui.composables.CommonTextField
+import com.rkbapps.autoreply.ui.screens.addeditautoreply.choose_contact.ChooseContactScreen
+import com.rkbapps.autoreply.ui.screens.addeditautoreply.schedule.ManageScheduleScreen
 import com.rkbapps.autoreply.ui.theme.primaryColor
 import com.rkbapps.autoreply.ui.theme.secondaryColor
 import com.rkbapps.autoreply.ui.theme.surfaceColor
@@ -70,6 +76,26 @@ import com.rkbapps.autoreply.utils.ReplyType
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddEditAutoReplyScreen(navController: NavHostController) {
+
+    val navControllerAddEdit = rememberNavController()
+
+    NavHost(navController = navControllerAddEdit, startDestination = NavigationRoutes.AddEdit){
+        composable <NavigationRoutes.AddEdit>{
+            AddEditScreen(navControllerAddEdit = navControllerAddEdit, navController = navController)
+        }
+        composable<NavigationRoutes.ChooseContact> {
+            ChooseContactScreen(navController = navControllerAddEdit)
+        }
+        composable<NavigationRoutes.ManageSchedule> {
+            ManageScheduleScreen(navController=navControllerAddEdit)
+        }
+    }
+}
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AddEditScreen(navControllerAddEdit: NavHostController,navController: NavHostController,) {
     Scaffold(
         topBar = {
             TopAppBar(
@@ -180,7 +206,9 @@ fun AddEditAutoReplyScreen(navController: NavHostController) {
                         icon = Icons.Outlined.PersonRemoveAlt1,
                         title = "Exclude Contacts",
                         subtitle = "Select contacts to exclude from this auto reply",
-                    )
+                    ){
+                        navControllerAddEdit.navigate(NavigationRoutes.ChooseContact)
+                    }
                 }
             }
             item {
@@ -190,7 +218,7 @@ fun AddEditAutoReplyScreen(navController: NavHostController) {
                         title = "Include Contacts",
                         subtitle = "Select contacts to include in this auto reply",
                     ){
-
+                        navControllerAddEdit.navigate(NavigationRoutes.ChooseContact)
                     }
                 }
             }
@@ -206,7 +234,7 @@ fun AddEditAutoReplyScreen(navController: NavHostController) {
                     title = "Schedule",
                     subtitle = "Set a schedule for this auto reply",
                 ){
-
+                    navControllerAddEdit.navigate(NavigationRoutes.ManageSchedule)
                 }
             }
             item {
@@ -237,7 +265,6 @@ fun AddEditAutoReplyScreen(navController: NavHostController) {
         }
 
     }
-
 }
 
 

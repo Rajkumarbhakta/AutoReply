@@ -14,4 +14,13 @@ sealed class NavigationRoutes{
 
     @Serializable
     data class AddEditAutoReply(val data:String?=null): NavigationRoutes()
+
+    @Serializable
+    data object AddEdit: NavigationRoutes()
+    @Serializable
+    data object ChooseContact: NavigationRoutes()
+
+    @Serializable
+    data object ManageSchedule: NavigationRoutes()
+
 }

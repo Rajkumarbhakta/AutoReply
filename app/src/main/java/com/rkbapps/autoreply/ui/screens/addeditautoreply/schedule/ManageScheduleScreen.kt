@@ -1,16 +1,14 @@
-package com.rkbapps.autoreply.ui.screens.addeditautoreply.choose_contact
+package com.rkbapps.autoreply.ui.screens.addeditautoreply.schedule
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
@@ -20,36 +18,30 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.rkbapps.autoreply.ui.composables.CommonSearchBar
+import com.rkbapps.autoreply.data.DaysOfWeek
+import com.rkbapps.autoreply.ui.composables.CommonTimePicker
 import com.rkbapps.autoreply.ui.theme.surfaceColor
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ChooseContactScreen(navController: NavHostController) {
-
-    val query = remember { mutableStateOf("") }
-
+fun ManageScheduleScreen(navController: NavHostController) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = {
-                    Text("Select Contacts")
-                },
+                title = { Text("Schedule") },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color.Transparent
                 ),
@@ -78,64 +70,76 @@ fun ChooseContactScreen(navController: NavHostController) {
         }
     ) { innerPadding ->
 
+
         LazyColumn(
-            modifier = Modifier.padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-            contentPadding = innerPadding
+            contentPadding = innerPadding,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
+
             item {
-                CommonSearchBar(
+                CommonTimePicker(
                     modifier = Modifier.fillMaxWidth(),
-                    query = query.value
-                ) {
-                    query.value = it
-                }
+                    labelText = "Start Time",
+                )
             }
             item {
+                CommonTimePicker(
+                    modifier = Modifier.fillMaxWidth(),
+                    labelText = "End Time",
+                )
+            }
+
+            item {
                 Text(
-                    "Contacts",
+                    "Active Days",
                     style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold)
                 )
             }
 
-            items(20) {
-                ContactItem()
+            items(
+                items = DaysOfWeek.entries
+            ) {
+                DaysOfWeekItem(day = it)
             }
+
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text("Always Active")
+                    Switch(
+                        checked = true,
+                        onCheckedChange = {}
+                    )
+                }
+            }
+
 
         }
 
     }
-
-
 }
 
 
 @Composable
-fun ContactItem(modifier: Modifier = Modifier) {
+fun DaysOfWeekItem(modifier: Modifier = Modifier,day: DaysOfWeek) {
 
     Row(
         modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-
-        Box(
-            modifier = Modifier
-                .size(50.dp)
-                .clip(CircleShape)
-                .background(color = Color.Cyan)
-        )
-        Column {
-            Text(
-                "Ethan Carter",
-                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
-            )
-            Text("+91 1234567890", style = MaterialTheme.typography.bodySmall)
-        }
-        Spacer(Modifier.weight(1f))
         Checkbox(
             checked = true,
-            onCheckedChange = { },
+            onCheckedChange = {}
+        )
+        Text(
+            day.name
         )
     }
 
