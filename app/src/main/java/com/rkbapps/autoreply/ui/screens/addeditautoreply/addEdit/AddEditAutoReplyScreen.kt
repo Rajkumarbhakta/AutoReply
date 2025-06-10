@@ -27,6 +27,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.PersonAddAlt1
 import androidx.compose.material.icons.outlined.PersonRemoveAlt1
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -35,10 +36,12 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -111,6 +114,7 @@ fun AddEditScreen(
     val data = remember { viewModel.data.id }
     val rule = viewModel.rule.collectAsStateWithLifecycle()
     val ruleAddUpdateStatus = viewModel.ruleAddUpdateStatus.collectAsStateWithLifecycle().value
+    val isDeleteAlertDialogOpen = remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -136,6 +140,34 @@ fun AddEditScreen(
         },
         containerColor = surfaceColor
     ) { innerPadding ->
+
+        if (isDeleteAlertDialogOpen.value){
+            AlertDialog(
+                onDismissRequest = { isDeleteAlertDialogOpen.value = false },
+                title = { Text("Delete Rule") },
+                text = { Text("Are you sure you want to delete this rule?") },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            viewModel.deleteRule(data)
+                            isDeleteAlertDialogOpen.value = false
+                            navController.navigateUp()
+                        }
+                    ) {
+                        Text("Delete")
+                    }
+                },
+                dismissButton = {
+                    Button(
+                        onClick = { isDeleteAlertDialogOpen.value = false }
+                    ) {
+                        Text("Cancel")
+                    }
+                }
+            )
+        }
+
+
         LaunchedEffect(ruleAddUpdateStatus.isError,ruleAddUpdateStatus.data) {
             when{
                 ruleAddUpdateStatus.isError->{
@@ -327,7 +359,9 @@ fun AddEditScreen(
                 ) {
                     if (data!=null){
                         Button(
-                            onClick = {},
+                            onClick = {
+                                isDeleteAlertDialogOpen.value = true
+                            },
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = secondaryColor,
                                 contentColor = Color.Black

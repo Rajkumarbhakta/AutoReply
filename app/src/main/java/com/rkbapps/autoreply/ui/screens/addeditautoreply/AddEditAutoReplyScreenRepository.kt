@@ -81,6 +81,13 @@ class AddEditAutoReplyScreenRepository @Inject constructor(
         }
     }
 
+    suspend fun deleteRule(id: Int) {
+        try {
+            autoReplyDao.deleteAutoReplyById(id)
+        } catch (e: Exception) {
+        }
+    }
+
     suspend fun addNewAutoReply(
         autoReplyEntity: AutoReplyEntity,
         addEditType: AddEditType = AddEditType.ADD

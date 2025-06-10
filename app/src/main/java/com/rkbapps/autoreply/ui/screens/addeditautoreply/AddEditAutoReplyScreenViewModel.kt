@@ -90,6 +90,14 @@ class AddEditAutoReplyScreenViewModel @Inject constructor(
         }
     }
 
+    fun deleteRule(id:Int?){
+        id?.let {
+            viewModelScope.launch(Dispatchers.IO) {
+                repository.deleteRule(it)
+            }
+        }
+    }
+
     fun updateRule(rule: AutoReplyEntity) = repository.updateRule(rule)
 
 
