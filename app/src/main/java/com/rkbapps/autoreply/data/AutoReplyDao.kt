@@ -35,6 +35,9 @@ interface AutoReplyDao {
     @Query("SELECT * FROM auto_reply WHERE isActive = 1")
     fun getActiveAutoReplies(): Flow<List<AutoReplyEntity>>
 
+    @Query("SELECT * FROM auto_reply WHERE isActive = 1")
+    suspend fun getAllActiveAutoRepliesOnce(): List<AutoReplyEntity>
+
     @Query("SELECT * FROM auto_reply WHERE isActive = 0")
     fun getInactiveAutoReplies(): Flow<List<AutoReplyEntity>>
 

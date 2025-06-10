@@ -1,5 +1,6 @@
 package com.rkbapps.autoreply.data
 
+import android.icu.util.Calendar
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.rkbapps.autoreply.utils.ReplyType
@@ -29,10 +30,26 @@ data class ReplySchedule(
 data class Time(
     val hour: Int,
     val minute: Int
-)
+){
+    fun toMinutes(): Int = hour * 60 + minute
+}
 
 enum class DaysOfWeek {
-    MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY
+    MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY;
+    companion object {
+        fun fromCalendarDay(calendarDay: Int): DaysOfWeek {
+            return when (calendarDay) {
+                Calendar.MONDAY -> MONDAY
+                Calendar.TUESDAY -> TUESDAY
+                Calendar.WEDNESDAY -> WEDNESDAY
+                Calendar.THURSDAY -> THURSDAY
+                Calendar.FRIDAY -> FRIDAY
+                Calendar.SATURDAY -> SATURDAY
+                Calendar.SUNDAY -> SUNDAY
+                else -> throw IllegalArgumentException("Invalid Calendar day: $calendarDay")
+            }
+        }
+    }
 }
 
 enum class MatchingType(

@@ -25,21 +25,21 @@ sealed class BottomNavigationItems(
         route = NavigationRoutes.Home
     )
 
-    data object Replies : BottomNavigationItems(
+    data object Rules : BottomNavigationItems(
         title = "Auto Reply",
         icon = Icons.Default.ChatBubble,
         unselectedIcon = Icons.Outlined.ChatBubble,
         route = NavigationRoutes.AutoReply
     )
 
-    data object Settings : BottomNavigationItems(
+    data object SentHistory : BottomNavigationItems(
         title = "Sent",
         icon = Icons.AutoMirrored.Filled.Send,
         unselectedIcon = Icons.AutoMirrored.Outlined.Send,
         route = NavigationRoutes.Sent
     )
 
-    data object About : BottomNavigationItems(
+    data object Settings : BottomNavigationItems(
         title = "Settings",
         icon = Icons.Default.Settings,
         unselectedIcon = Icons.Outlined.Settings,
@@ -49,7 +49,7 @@ sealed class BottomNavigationItems(
 
 val bottomNavigationItems = listOf(
     BottomNavigationItems.Home,
-    BottomNavigationItems.Replies,
-    BottomNavigationItems.Settings,
-    BottomNavigationItems.About
+    BottomNavigationItems.Rules,
+//    BottomNavigationItems.SentHistory,
+    BottomNavigationItems.Settings
 )

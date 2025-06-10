@@ -1,12 +1,15 @@
 package com.rkbapps.autoreply.notificationhelper
 
+import android.icu.util.Calendar
 import android.util.Log
 import com.google.mlkit.nl.smartreply.SmartReply
 import com.google.mlkit.nl.smartreply.SmartReplySuggestionResult
 import com.google.mlkit.nl.smartreply.TextMessage
 import com.rkbapps.autoreply.data.AutoReplyDao
 import com.rkbapps.autoreply.data.AutoReplyEntity
+import com.rkbapps.autoreply.data.DaysOfWeek
 import com.rkbapps.autoreply.data.MatchingType
+import com.rkbapps.autoreply.data.Time
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -14,83 +17,93 @@ import java.util.UUID
 import javax.inject.Inject
 
 interface ReplyManager {
-    fun generateReply(message: String): String
+    fun generateReply(trigger: String,rule: AutoReplyEntity): String?
 }
 
-open class GenericReplyManager() : ReplyManager {
+open class DatabaseReplyManager @Inject constructor() : ReplyManager {
 
-    companion object {
-        const val NO_REPLY = "Sorry I don't understand";
+    fun getCurrentTime(): Time{
+        val calendar = Calendar.getInstance()
+        val currentHour: Int = calendar.get(Calendar.HOUR_OF_DAY) // 24-hour format
+        val currentMinute: Int = calendar.get(Calendar.MINUTE)
+        return Time(
+            hour = currentHour,
+            minute = currentMinute
+        )
     }
-
-    override fun generateReply(message: String): String {
-        if (message.equals("hello", ignoreCase = true)) {
-            return "Hi! how can i help you?"
-        }
-        if (message.equals("hi", ignoreCase = true)) {
-            return "Hi! how can i help you?"
-        }
-        if (message.equals("how are you", ignoreCase = true)) {
-            return "I am fine, thank you!"
-        }
-        return NO_REPLY
+    fun getCurrentDayOfWeekCalendar(): DaysOfWeek {
+        val calendar = Calendar.getInstance()
+        val dayOfWeekInt = calendar.get(Calendar.DAY_OF_WEEK) // SUNDAY is 1, MONDAY is 2, ..., SATURDAY is 7
+        return DaysOfWeek.fromCalendarDay(dayOfWeekInt)
     }
-}
+    fun isCurrentTimeBetween(currentTime: Time, startTime: Time, endTime: Time): Boolean {
+        val currentTimeInMinutes = currentTime.toMinutes()
+        val startTimeInMinutes = startTime.toMinutes()
+        val endTimeInMinutes = endTime.toMinutes()
 
-open class DatabaseReplyManager @Inject constructor(
-    private val dataBase: AutoReplyDao
-) : GenericReplyManager() {
-
-    private var autoReplyList = listOf<AutoReplyEntity>()
-
-    init {
-        getAllAutoReply()
-    }
-
-    fun getAllAutoReply() {
-        try {
-            CoroutineScope(Dispatchers.IO).launch {
-                dataBase.getAllAutoReplies().collect {
-                    autoReplyList = it
-                }
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
+        // Handle cases where the time range spans across midnight (e.g., 10 PM to 2 AM)
+        return if (startTimeInMinutes <= endTimeInMinutes) {
+            // Normal case: Start time is before or same as end time
+            currentTimeInMinutes >= startTimeInMinutes && currentTimeInMinutes <= endTimeInMinutes
+        } else {
+            // Time range crosses midnight (e.g., start 22:00, end 02:00)
+            // Current time must be after start time OR before end time
+            currentTimeInMinutes >= startTimeInMinutes || currentTimeInMinutes <= endTimeInMinutes
         }
     }
 
-    override fun generateReply(message: String): String {
-        autoReplyList.find {
-            message.contains(it.trigger, ignoreCase = true)
-        }?.let {
-            when (it.matchingType) {
-                MatchingType.EXACT -> {
-                    if (message.equals(it.trigger, ignoreCase = true)) {
-                        return it.reply
-                    }
-                }
-
-                MatchingType.STARTS_WITH -> {
-                    if (message.startsWith(it.trigger, ignoreCase = true)) {
-                        return it.reply
-                    }
-                }
-
-                MatchingType.CONTAINS -> {
-                    if (message.contains(it.trigger, ignoreCase = true)) {
-                        return it.reply
-                    }
+    override fun generateReply(trigger: String,rule: AutoReplyEntity): String? {
+        if (rule.schedule==null){
+            // If no schedule is set, we can generate a reply immediately
+            return getReplyMessage(rule.matchingType, rule.reply, trigger)
+        }else{
+            val currentTime = getCurrentTime()
+            val currentDay = getCurrentDayOfWeekCalendar()
+            if (rule.schedule.startTime != null && rule.schedule.endTime != null) {
+                val startTime = rule.schedule.startTime
+                val endTime = rule.schedule.endTime
+                val isValidTime = isCurrentTimeBetween(currentTime, startTime, endTime)
+                if (isValidTime && rule.schedule.daysOfWeek.contains(currentDay)){
+                    return getReplyMessage(rule.matchingType, rule.reply,trigger)
                 }
             }
         }
-        return super.generateReply(message)
+        return null
+    }
+
+    private fun getReplyMessage(
+        matchingType:MatchingType,
+        reply: String,
+        trigger: String
+    ): String? = when (matchingType) {
+        MatchingType.CONTAINS -> {
+            if (trigger.contains(trigger, ignoreCase = true)) {
+                reply
+            } else {
+                null
+            }
+        }
+
+        MatchingType.EXACT -> {
+            if (trigger.equals(trigger, ignoreCase = true)) {
+                reply
+            } else {
+                null
+            }
+        }
+
+        MatchingType.STARTS_WITH -> {
+            if (trigger.startsWith(trigger, ignoreCase = true)) {
+                reply
+            } else {
+                null
+            }
+        }
     }
 
 }
 
-class SmartReplyManager @Inject constructor(
-    private val dataBase: AutoReplyDao
-) : DatabaseReplyManager(dataBase) {
+class SmartReplyManager @Inject constructor() : ReplyManager {
     val smartReplyGenerator = SmartReply.getClient()
     fun generateSmartReply(message: String): String? {
         val chatHistory = ArrayList<TextMessage>()
@@ -106,12 +119,11 @@ class SmartReplyManager @Inject constructor(
             when (task.result.status) {
                 SmartReplySuggestionResult.STATUS_NOT_SUPPORTED_LANGUAGE -> {
                     Log.d("SmartReplyManager", "Not supported language")
-                    reply = super.generateReply(message)
+                    reply = null
                 }
-
                 SmartReplySuggestionResult.STATUS_NO_REPLY -> {
                     Log.d("SmartReplyManager", "No reply")
-                    reply = super.generateReply(message)
+                    reply = null
                 }
 
                 SmartReplySuggestionResult.STATUS_SUCCESS -> {
@@ -121,12 +133,15 @@ class SmartReplyManager @Inject constructor(
             }
         }.addOnFailureListener {
             Log.d("SmartReplyManager", "Error ${it.message}")
-            reply = super.generateReply(message)
+            reply = null
         }
         return reply
     }
 
-    override fun generateReply(message: String): String {
-        return generateSmartReply(message) ?: super.generateReply(message)
+    override fun generateReply(
+        trigger: String,
+        rule: AutoReplyEntity
+    ): String? {
+        return generateSmartReply(trigger)
     }
 }
