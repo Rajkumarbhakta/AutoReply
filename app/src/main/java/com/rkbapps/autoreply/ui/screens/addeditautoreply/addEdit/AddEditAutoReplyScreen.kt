@@ -19,6 +19,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
@@ -45,10 +46,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -62,6 +65,7 @@ import com.rkbapps.autoreply.ui.screens.addeditautoreply.schedule.ManageSchedule
 import com.rkbapps.autoreply.ui.theme.primaryColor
 import com.rkbapps.autoreply.ui.theme.secondaryColor
 import com.rkbapps.autoreply.ui.theme.surfaceColor
+import com.rkbapps.autoreply.utils.ChooseContactType
 import com.rkbapps.autoreply.utils.ReplyType
 
 
@@ -124,10 +128,7 @@ fun AddEditScreen(
         containerColor = surfaceColor
     ) { innerPadding ->
 
-        val ruleName = remember { mutableStateOf("") }
-        val triggerCondition = remember { mutableStateOf("") }
-        val autoReplyMessage = remember { mutableStateOf("") }
-        val selectedAudience = remember { mutableStateOf(ReplyType.INDIVIDUAL) }
+        val rule = viewModel.rule.collectAsStateWithLifecycle()
 
         LazyColumn(
             modifier = Modifier
@@ -141,28 +142,74 @@ fun AddEditScreen(
             }
             item {
                 CommonTextField(
-                    text = ruleName.value,
+                    text = rule.value.name,
                     labelText = "Rule Name",
                     placeholderText = "Enter a name for this rule",
                     maxLines = 1,
                     modifier = Modifier.fillMaxWidth(),
                 ) {
-                    ruleName.value = it
+                    val update = rule.value.copy(name = it)
+                    viewModel.updateRule(update)
                 }
             }
             item {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)){
+                    Text("Trigger Condition", style = MaterialTheme.typography.titleMedium)
+                    LazyRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        item {
+                            Spacer(Modifier.width(10.dp))
+                        }
+                        items(
+                            items = MatchingType.entries
+                        ) {
+                            ConditionItem(
+                                selected = it == rule.value.matchingType,
+                                type = it
+                            ) { type ->
+                                val update = rule.value.copy(matchingType = type)
+                                viewModel.updateRule(update)
+                            }
+                        }
+                        item {
+                            Spacer(Modifier.width(10.dp))
+                        }
+                    }
+
+                    CommonTextField(
+                        text = rule.value.trigger,
+                        placeholderText = "Enter keywords or phrases",
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        val update = rule.value.copy(trigger = it)
+                        viewModel.updateRule(update)
+                    }
+                }
+            }
+
+            item {
+                val text = if (rule.value.delay==0L) "" else rule.value.delay.toString()
                 CommonTextField(
-                    text = autoReplyMessage.value,
-                    labelText = "Trigger Condition",
-                    placeholderText = "Enter keywords or phrases",
+                    text =  text,
+                    labelText = "Delay Before Reply",
+                    placeholderText = "Enter delay in milliseconds",
+                    maxLines = 1,
                     modifier = Modifier.fillMaxWidth(),
+                    trailingText = "ms",
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                 ) {
-                    autoReplyMessage.value = it
+                    val delay = it.toLongOrNull() ?: 0L
+                    val update = rule.value.copy(delay = delay)
+                    viewModel.updateRule(update)
                 }
             }
+
             item {
                 CommonTextField(
-                    text = triggerCondition.value,
+                    text = rule.value.reply,
                     labelText = "Auto Reply Message",
                     placeholderText = "Enter keywords or phrases",
                     maxLines = 1,
@@ -170,7 +217,8 @@ fun AddEditScreen(
                         .fillMaxWidth()
                         .height(200.dp),
                 ) {
-                    triggerCondition.value = it
+                    val update = rule.value.copy(reply = it)
+                    viewModel.updateRule(update)
                 }
             }
             item {
@@ -192,10 +240,11 @@ fun AddEditScreen(
                         items = ReplyType.entries
                     ) {
                         TargetAudienceItems(
-                            selected = it == selectedAudience.value,
+                            selected = it == rule.value.replyType,
                             type = it
                         ) { type ->
-                            selectedAudience.value = it
+                            val update = rule.value.copy(replyType = type)
+                            viewModel.updateRule(update)
                         }
                     }
                     item {
@@ -204,23 +253,25 @@ fun AddEditScreen(
                 }
             }
             item {
-                AnimatedVisibility(visible = selectedAudience.value == ReplyType.INDIVIDUAL) {
+                AnimatedVisibility(visible = rule.value.replyType == ReplyType.INDIVIDUAL) {
                     CardItems(
                         icon = Icons.Outlined.PersonRemoveAlt1,
                         title = "Exclude Contacts",
                         subtitle = "Select contacts to exclude from this auto reply",
                     ) {
+                        viewModel.setContactChooseType(ChooseContactType.EXCLUDE)
                         navControllerAddEdit.navigate(NavigationRoutes.ChooseContact)
                     }
                 }
             }
             item {
-                AnimatedVisibility(visible = selectedAudience.value == ReplyType.INDIVIDUAL) {
+                AnimatedVisibility(visible = rule.value.replyType == ReplyType.INDIVIDUAL) {
                     CardItems(
                         icon = Icons.Outlined.PersonAddAlt1,
                         title = "Include Contacts",
                         subtitle = "Select contacts to include in this auto reply",
                     ) {
+                        viewModel.setContactChooseType(ChooseContactType.INCLUDE)
                         navControllerAddEdit.navigate(NavigationRoutes.ChooseContact)
                     }
                 }
@@ -337,6 +388,32 @@ fun TargetAudienceItems(
     selected: Boolean = false,
     type: ReplyType = ReplyType.INDIVIDUAL,
     onSelect: (ReplyType) -> Unit = { }
+) {
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(12.dp))
+            .border(
+                width = 1.dp,
+                color = if (selected) primaryColor else secondaryColor,
+                shape = RoundedCornerShape(12.dp)
+            )
+            .clickable {
+                onSelect(type)
+            }, contentAlignment = Alignment.Center
+    ) {
+        Text(
+            type.value.uppercase(),
+            style = MaterialTheme.typography.labelMedium,
+            modifier = Modifier.padding(10.dp)
+        )
+    }
+}
+@Composable
+fun ConditionItem(
+    modifier: Modifier = Modifier,
+    selected: Boolean = false,
+    type: MatchingType = MatchingType.STARTS_WITH,
+    onSelect: (MatchingType) -> Unit = { }
 ) {
     Box(
         modifier = modifier

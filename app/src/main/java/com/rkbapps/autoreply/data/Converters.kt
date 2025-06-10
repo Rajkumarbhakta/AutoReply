@@ -50,4 +50,13 @@ class Converters {
         return gson.fromJson(value, listType)
     }
 
+    @TypeConverter
+    fun fromTime(value: Time?): String? {
+        return value?.let { gson.toJson(it) }
+    }
+    @TypeConverter
+    fun toTime(value: String?): Time? {
+        return value?.let { gson.fromJson(it, Time::class.java) }
+    }
+
 }

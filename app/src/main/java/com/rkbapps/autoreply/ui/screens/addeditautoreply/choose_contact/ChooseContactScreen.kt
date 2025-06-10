@@ -44,10 +44,12 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import coil3.compose.AsyncImage
+import coil3.compose.SubcomposeAsyncImage
 import com.rkbapps.autoreply.models.Contact
 import com.rkbapps.autoreply.ui.composables.CommonSearchBar
 import com.rkbapps.autoreply.ui.screens.addeditautoreply.AddEditAutoReplyScreenViewModel
 import com.rkbapps.autoreply.ui.theme.surfaceColor
+import com.rkbapps.autoreply.utils.ChooseContactType
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -57,17 +59,23 @@ fun ChooseContactScreen(
     viewModel: AddEditAutoReplyScreenViewModel
 ) {
 
+    val contactChooseType = remember { viewModel.getContactChooseType() }
+
     val query = remember { mutableStateOf("") }
     val context = LocalContext.current
 
-
     val contacts = viewModel.contacts.collectAsStateWithLifecycle()
+    val rule = viewModel.rule.collectAsStateWithLifecycle()
 
     val permissionLauncher =
-        rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission(),
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.RequestPermission(),
             onResult = { granted ->
                 if (granted) {
-                    viewModel.loadContacts()
+                    when(contactChooseType){
+                        ChooseContactType.INCLUDE -> viewModel.loadIncludeContacts()
+                        ChooseContactType.EXCLUDE -> viewModel.loadExcludeContacts()
+                    }
                     Toast.makeText(context, "Notification permission granted", Toast.LENGTH_SHORT).show()
                 } else {
                     Toast.makeText(context, "Notification permission denied", Toast.LENGTH_SHORT).show()
@@ -79,8 +87,11 @@ fun ChooseContactScreen(
     LaunchedEffect(key1 = viewModel.isContactPermissionGranted(context)) {
         if (viewModel.isContactPermissionGranted(context) == false) {
             takePermission(permissionLauncher)
-        }else{
-            viewModel.loadContacts()
+        } else {
+            when(contactChooseType){
+                ChooseContactType.INCLUDE -> viewModel.loadIncludeContacts()
+                ChooseContactType.EXCLUDE -> viewModel.loadExcludeContacts()
+            }
         }
     }
 
@@ -106,10 +117,11 @@ fun ChooseContactScreen(
         },
         bottomBar = {
             Box(
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
                     .background(color = surfaceColor)
                     .padding(10.dp)
-            ){
+            ) {
                 Button(
                     modifier = Modifier.fillMaxWidth(),
                     onClick = {}
@@ -141,7 +153,36 @@ fun ChooseContactScreen(
             }
 
             items(contacts.value) {
-                ContactItem(contact = it)
+                val isContactSelected = when (contactChooseType) {
+                    ChooseContactType.INCLUDE -> rule.value.includeContacts.contains(it.phoneNumber)
+                    ChooseContactType.EXCLUDE -> rule.value.excludeContacts.contains(it.phoneNumber)
+                }
+                ContactItem(
+                    contact = it,
+                    isSelected = isContactSelected,
+                ){
+                    val update = rule.value.copy(
+                        includeContacts = if (contactChooseType == ChooseContactType.INCLUDE) {
+                            if (isContactSelected) {
+                                rule.value.includeContacts - it.phoneNumber
+                            } else {
+                                rule.value.includeContacts + it.phoneNumber
+                            }
+                        } else {
+                            rule.value.includeContacts
+                        },
+                        excludeContacts = if (contactChooseType == ChooseContactType.EXCLUDE) {
+                            if (isContactSelected) {
+                                rule.value.excludeContacts - it.phoneNumber
+                            } else {
+                                rule.value.excludeContacts + it.phoneNumber
+                            }
+                        } else {
+                            rule.value.excludeContacts
+                        }
+                    )
+                    viewModel.updateRule(update)
+                }
             }
 
         }
@@ -153,37 +194,52 @@ fun ChooseContactScreen(
 
 
 @Composable
-fun ContactItem(modifier: Modifier = Modifier,contact: Contact) {
+fun ContactItem(
+    modifier: Modifier = Modifier,
+    contact: Contact,
+    isSelected: Boolean = false,
+    onContactSelected: (Contact) -> Unit = { /* No-op */ }
+) {
 
     Row(
         modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-
         Box(
             modifier = Modifier
                 .size(50.dp)
                 .clip(CircleShape)
                 .background(color = Color.Cyan)
-        ){
-            AsyncImage(
+        ) {
+            SubcomposeAsyncImage(
                 model = contact.photoUri,
                 contentDescription = "Contact Image",
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
+                error = {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center){
+                        Text(
+                            text = contact.name?.firstOrNull()?.toString() ?: "?",
+                            style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
+                            modifier = Modifier.align(Alignment.Center)
+                        )
+                    }
+                }
             )
         }
         Column {
             Text(
-                contact.name?:"",
+                contact.name ?: "",
                 style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
             )
             Text(contact.phoneNumber, style = MaterialTheme.typography.bodySmall)
         }
         Spacer(Modifier.weight(1f))
         Checkbox(
-            checked = true,
-            onCheckedChange = { },
+            checked = isSelected,
+            onCheckedChange = {
+                onContactSelected(contact)
+            },
         )
     }
 

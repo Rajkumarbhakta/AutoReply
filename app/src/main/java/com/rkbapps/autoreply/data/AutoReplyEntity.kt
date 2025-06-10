@@ -8,9 +8,10 @@ import com.rkbapps.autoreply.utils.ReplyType
 data class AutoReplyEntity(
     @PrimaryKey(autoGenerate = true)
     var id: Int = 0,
+    val name: String,
     val trigger: String,
     val reply: String,
-    val matchingType: MatchingType,
+    val matchingType: MatchingType = MatchingType.STARTS_WITH,
     val delay: Long = 0L,
     val replyType: ReplyType = ReplyType.INDIVIDUAL,
     val includeContacts: List<String> = emptyList(),
@@ -20,9 +21,14 @@ data class AutoReplyEntity(
 )
 
 data class ReplySchedule(
-    val startTime: Long? = null,
-    val endTime: Long? = null,
+    val startTime: Time? = null,
+    val endTime: Time? = null,
     val daysOfWeek: List<DaysOfWeek> = emptyList(),
+)
+
+data class Time(
+    val hour: Int,
+    val minute: Int
 )
 
 enum class DaysOfWeek {

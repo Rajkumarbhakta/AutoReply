@@ -1,10 +1,10 @@
 package com.rkbapps.autoreply.ui.screens.addeditautoreply.schedule
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -28,8 +28,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.rkbapps.autoreply.data.DaysOfWeek
+import com.rkbapps.autoreply.data.ReplySchedule
+import com.rkbapps.autoreply.data.Time
 import com.rkbapps.autoreply.ui.composables.CommonTimePicker
 import com.rkbapps.autoreply.ui.screens.addeditautoreply.AddEditAutoReplyScreenViewModel
 import com.rkbapps.autoreply.ui.theme.surfaceColor
@@ -41,6 +44,8 @@ fun ManageScheduleScreen(
     navController: NavHostController,
     viewModel: AddEditAutoReplyScreenViewModel
 ) {
+    val rule = viewModel.rule.collectAsStateWithLifecycle().value
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -59,10 +64,11 @@ fun ManageScheduleScreen(
         },
         bottomBar = {
             Box(
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
                     .background(color = surfaceColor)
                     .padding(10.dp)
-            ){
+            ) {
                 Button(
                     modifier = Modifier.fillMaxWidth(),
                     onClick = {}
@@ -73,39 +79,59 @@ fun ManageScheduleScreen(
         }
     ) { innerPadding ->
 
-
         LazyColumn(
             contentPadding = innerPadding,
             modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 16.dp),
+                .padding(horizontal = 16.dp)
+                .animateContentSize(),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
 
-            item {
-                CommonTimePicker(
-                    modifier = Modifier.fillMaxWidth(),
-                    labelText = "Start Time",
-                )
-            }
-            item {
-                CommonTimePicker(
-                    modifier = Modifier.fillMaxWidth(),
-                    labelText = "End Time",
-                )
-            }
+            if (rule.schedule != null) {
+                item {
+                    CommonTimePicker(
+                        modifier = Modifier.fillMaxWidth(),
+                        pickedTime = rule.schedule.startTime,
+                        labelText = "Start Time",
+                    ) { hour, minute ->
+                        val updatedSchedule = rule.schedule.copy(startTime = Time(hour, minute))
+                        viewModel.updateRule(rule.copy(schedule = updatedSchedule))
+                    }
+                }
+                item {
+                    CommonTimePicker(
+                        modifier = Modifier.fillMaxWidth(),
+                        pickedTime = rule.schedule.endTime,
+                        labelText = "End Time",
+                    ) { hour, minute ->
+                        val updatedSchedule = rule.schedule.copy(endTime = Time(hour, minute))
+                        viewModel.updateRule(rule.copy(schedule = updatedSchedule))
+                    }
+                }
 
-            item {
-                Text(
-                    "Active Days",
-                    style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold)
-                )
-            }
+                item {
+                    Text(
+                        "Active Days",
+                        style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold)
+                    )
+                }
 
-            items(
-                items = DaysOfWeek.entries
-            ) {
-                DaysOfWeekItem(day = it)
+                items(
+                    items = DaysOfWeek.entries
+                ) {
+                    DaysOfWeekItem(
+                        day = it,
+                        isSelected = rule.schedule.daysOfWeek.contains(it),
+                    ) {
+                        val updatedDays = if (rule.schedule.daysOfWeek.contains(it)) {
+                            rule.schedule.daysOfWeek - it
+                        } else {
+                            rule.schedule.daysOfWeek + it
+                        }
+                        val updatedSchedule = rule.schedule.copy(daysOfWeek = updatedDays)
+                        viewModel.updateRule(rule.copy(schedule = updatedSchedule))
+                    }
+                }
             }
 
             item {
@@ -116,8 +142,15 @@ fun ManageScheduleScreen(
                 ) {
                     Text("Always Active")
                     Switch(
-                        checked = true,
-                        onCheckedChange = {}
+                        checked = rule.schedule == null,
+                        onCheckedChange = {
+                            val update = if (it) {
+                                rule.copy(schedule = null)
+                            } else {
+                                rule.copy(schedule = ReplySchedule())
+                            }
+                            viewModel.updateRule(update)
+                        }
                     )
                 }
             }
@@ -130,7 +163,12 @@ fun ManageScheduleScreen(
 
 
 @Composable
-fun DaysOfWeekItem(modifier: Modifier = Modifier,day: DaysOfWeek) {
+fun DaysOfWeekItem(
+    modifier: Modifier = Modifier,
+    isSelected: Boolean = false,
+    day: DaysOfWeek,
+    onDaySelected: (DaysOfWeek) -> Unit = { /* No-op */ }
+) {
 
     Row(
         modifier = modifier,
@@ -138,8 +176,10 @@ fun DaysOfWeekItem(modifier: Modifier = Modifier,day: DaysOfWeek) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Checkbox(
-            checked = true,
-            onCheckedChange = {}
+            checked = isSelected,
+            onCheckedChange = {
+                onDaySelected(day)
+            }
         )
         Text(
             day.name

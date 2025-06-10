@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import com.rkbapps.autoreply.data.Time
 import com.rkbapps.autoreply.ui.theme.surfaceColor
 import com.rkbapps.autoreply.ui.theme.textFieldBackGroundLight
 import com.rkbapps.autoreply.ui.theme.textFieldPlaceHolderColor
@@ -35,11 +36,11 @@ import java.util.Locale
 @Composable
 fun CommonTimePicker(
     modifier: Modifier = Modifier,
+    pickedTime : Time? = null,
     labelText: String,
     onTimeChange: (hour:Int,minute:Int) -> Unit = {_,_->},
 ) {
     val isTimePickerVisible = remember { mutableStateOf(false) }
-    val pickedTime = remember { mutableStateOf("") }
 
     if (isTimePickerVisible.value){
         TimePickerDialog(
@@ -48,18 +49,14 @@ fun CommonTimePicker(
                 val hour = state.hour
                 val minute = state.minute
                 onTimeChange(hour, minute)
-                pickedTime.value = String.format(Locale.getDefault(),"%02d:%02d %s",
-                    if (hour > 12) hour - 12 else hour, minute, if (hour >= 12) "PM" else "AM",
-                )
             }
         )
     }
 
-
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Text(labelText, style = MaterialTheme.typography.titleMedium)
         TextField(
-            value = pickedTime.value,
+            value = if (pickedTime==null) "" else hourMinuteToString(pickedTime.hour, pickedTime.minute),
             enabled = false,
             onValueChange = { },
             colors = TextFieldDefaults.colors(
@@ -93,6 +90,13 @@ fun CommonTimePicker(
             }
         )
     }
+}
+
+
+fun hourMinuteToString(hour: Int, minute: Int): String {
+    val amPm = if (hour < 12) "AM" else "PM"
+    val adjustedHour = if (hour == 0) 12 else if (hour > 12) hour - 12 else hour
+    return String.format(Locale.getDefault(), "%02d:%02d %s", adjustedHour, minute, amPm)
 }
 
 

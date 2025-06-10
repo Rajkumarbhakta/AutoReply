@@ -3,6 +3,8 @@ package com.rkbapps.autoreply.ui.composables
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -20,13 +22,16 @@ import com.rkbapps.autoreply.ui.theme.textFieldPlaceHolderColor
 fun CommonTextField(
     modifier: Modifier = Modifier,
     text: String,
-    labelText: String,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    keyboardActions: KeyboardActions = KeyboardActions.Default,
+    trailingText: String? = null,
+    labelText: String? = null,
     placeholderText: String,
     maxLines: Int = Int.MAX_VALUE,
     onTextChange: (text: String) -> Unit = {}
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        Text(labelText, style = MaterialTheme.typography.titleMedium)
+        labelText?.let { Text(it, style = MaterialTheme.typography.titleMedium) }
         TextField(
             value = text,
             onValueChange = { onTextChange(it) },
@@ -39,12 +44,19 @@ fun CommonTextField(
             maxLines = maxLines,
             modifier = modifier,
             shape = RoundedCornerShape(10.dp),
+            keyboardOptions = keyboardOptions,
+            keyboardActions = keyboardActions,
             placeholder = {
                 Text(
                     text = placeholderText,
                     style = MaterialTheme.typography.bodyMedium,
                     color = textFieldPlaceHolderColor
                 )
+            },
+            trailingIcon = {
+                trailingText?.let {
+                    Text(text = it,)
+                }
             }
 
         )
