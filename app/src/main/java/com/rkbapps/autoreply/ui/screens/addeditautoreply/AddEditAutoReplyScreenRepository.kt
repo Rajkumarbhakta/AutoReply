@@ -4,31 +4,31 @@ import android.content.Context
 import android.provider.ContactsContract
 import com.rkbapps.autoreply.data.AutoReplyDao
 import com.rkbapps.autoreply.data.AutoReplyEntity
-import com.rkbapps.autoreply.data.MatchingType
 import com.rkbapps.autoreply.models.Contact
+import com.rkbapps.autoreply.utils.ChooseContactType
 import com.rkbapps.autoreply.utils.UiState
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
-import kotlin.collections.mutableListOf
 
 class AddEditAutoReplyScreenRepository @Inject constructor(
     @ApplicationContext private val mApplication: Context,
     private val autoReplyDao: AutoReplyDao
 ) {
-    val matchingTypeList = MatchingType.entries.toList()
+
+    private val allContacts = mutableListOf<Contact>()
 
     private val rule = MutableStateFlow(AutoReplyEntity(trigger = "", reply = "", name = ""))
     val ruleState = rule.asStateFlow()
 
-    private val allContacts= mutableListOf<Contact>()
-
     private val contacts = MutableStateFlow(emptyList<Contact>())
     val contactsState = contacts.asStateFlow()
+
+    private val _ruleAddUpdateStatus = MutableStateFlow(UiState<AutoReplyEntity>())
+    val ruleAddUpdateStatus = _ruleAddUpdateStatus.asStateFlow()
 
     suspend fun loadContacts() {
         if (allContacts.isNotEmpty()) {
@@ -39,7 +39,7 @@ class AddEditAutoReplyScreenRepository @Inject constructor(
         allContacts.addAll(contactsList)
     }
 
-    suspend fun loadIncludeContacts(){
+    suspend fun loadIncludeContacts() {
         val contactsList = allContacts
         val excludedContacts = rule.value.excludeContacts
         val filteredContacts = contactsList.filter { contact ->
@@ -48,7 +48,7 @@ class AddEditAutoReplyScreenRepository @Inject constructor(
         contacts.emit(filteredContacts)
     }
 
-    suspend fun loadExcludeContacts(){
+    suspend fun loadExcludeContacts() {
         val contactsList = allContacts
         val includedContacts = rule.value.includeContacts
         val filteredContacts = contactsList.filter { contact ->
@@ -57,35 +57,56 @@ class AddEditAutoReplyScreenRepository @Inject constructor(
         contacts.emit(filteredContacts)
     }
 
+    fun updateRule(rule: AutoReplyEntity) { this.rule.value = rule }
 
-    private val _autoReplyAddStatus = MutableStateFlow(UiState<AutoReplyEntity>())
-    val autoReplyAddStatus = _autoReplyAddStatus.asStateFlow()
-
-
-    fun updateRule(rule: AutoReplyEntity) {
-        this.rule.value = rule
+    suspend fun searchContacts(query: String,type: ChooseContactType) {
+        val availableContacts = contacts.value
+        if (query.isNotBlank() && query.isNotEmpty()){
+            val filteredContacts = availableContacts.filter { contact ->
+                contact.name?.contains(query, ignoreCase = true) == true || contact.phoneNumber.contains(query, ignoreCase = true)
+            }
+            contacts.value = filteredContacts
+        }else{
+            when (type) {
+                ChooseContactType.INCLUDE -> loadIncludeContacts()
+                ChooseContactType.EXCLUDE -> loadExcludeContacts()
+            }
+        }
     }
 
-    suspend fun addNewAutoReply(autoReplyEntity: AutoReplyEntity,addEditType: AddEditType = AddEditType.ADD){
-        _autoReplyAddStatus.emit(UiState(isLoading = true))
+    suspend fun addNewAutoReply(
+        autoReplyEntity: AutoReplyEntity,
+        addEditType: AddEditType = AddEditType.ADD
+    ) {
+        _ruleAddUpdateStatus.emit(UiState(isLoading = true))
         try {
-            if(autoReplyEntity.reply.isBlank()){
-                _autoReplyAddStatus.emit(UiState(isError = true, message = "Send message cannot be empty"))
+            if (autoReplyEntity.reply.isBlank()) {
+                _ruleAddUpdateStatus.emit(
+                    UiState(
+                        isError = true,
+                        message = "Send message cannot be empty"
+                    )
+                )
                 return
             }
-            if(autoReplyEntity.trigger.isBlank()){
-                _autoReplyAddStatus.emit(UiState(isError = true, message = "Receive message cannot be empty"))
+            if (autoReplyEntity.trigger.isBlank()) {
+                _ruleAddUpdateStatus.emit(
+                    UiState(
+                        isError = true,
+                        message = "Receive message cannot be empty"
+                    )
+                )
                 return
             }
-            if(addEditType== AddEditType.ADD){
+            if (addEditType == AddEditType.ADD) {
                 autoReplyDao.insertAutoReply(autoReplyEntity)
-            }else{
+            } else {
                 autoReplyDao.updateAutoReply(autoReplyEntity)
             }
-            _autoReplyAddStatus.emit(UiState(data = autoReplyEntity))
+            _ruleAddUpdateStatus.emit(UiState(data = autoReplyEntity))
 
-        }catch (e: Exception){
-            _autoReplyAddStatus.emit(UiState(isError = true, message = e.localizedMessage))
+        } catch (e: Exception) {
+            _ruleAddUpdateStatus.emit(UiState(isError = true, message = e.localizedMessage))
         }
     }
 
@@ -107,7 +128,8 @@ class AddEditAutoReplyScreenRepository @Inject constructor(
 
         contactsCursor?.use { cursor ->
             val idIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.CONTACT_ID)
-            val nameIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME)
+            val nameIndex =
+                cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME)
             val phoneIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)
             val photoIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.PHOTO_URI)
 
@@ -133,9 +155,8 @@ class AddEditAutoReplyScreenRepository @Inject constructor(
         return@withContext contactsList
     }
 
-
 }
 
-enum class AddEditType{
-    ADD,EDIT
+enum class AddEditType {
+    ADD, EDIT
 }

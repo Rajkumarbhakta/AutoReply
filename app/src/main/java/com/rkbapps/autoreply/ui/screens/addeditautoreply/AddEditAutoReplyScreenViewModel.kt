@@ -35,20 +35,22 @@ class AddEditAutoReplyScreenViewModel @Inject constructor(
         }
     }
 
+    val data = saveStateHandle.toRoute<NavigationRoutes.AddEditAutoReply>()
+
     private var contactChooseType: ChooseContactType? = null
-
     val rule = repository.ruleState
-    val contacts = repository.contactsState
 
+
+    val contacts = repository.contactsState
 
     fun setContactChooseType(type: ChooseContactType) {
         contactChooseType = type
     }
 
+
     fun getContactChooseType(): ChooseContactType {
         return contactChooseType!!
     }
-
 
     fun loadIncludeContacts() = viewModelScope.launch(Dispatchers.IO) {
         repository.loadContacts()
@@ -60,24 +62,16 @@ class AddEditAutoReplyScreenViewModel @Inject constructor(
         repository.loadExcludeContacts()
     }
 
-
-    val matchingTypeList = repository.matchingTypeList
-
-    val autoReplyAddStatus = repository.autoReplyAddStatus
-
-    val data = saveStateHandle.toRoute<NavigationRoutes.AddEditAutoReply>()
-
-    val autoReplyObject = if (data.data != null) {
-        gson.fromJson(data.data, AutoReplyEntity::class.java)
-    } else {
-        null
+    fun searchContacts(query: String) = viewModelScope.launch(Dispatchers.IO) {
+        contactChooseType?.let {
+            repository.searchContacts(query, it)
+        }
     }
 
     val ruleState = repository.ruleState
 
     fun addNewAutoReply(
-        autoReplyEntity: AutoReplyEntity,
-        addEditType: AddEditType = AddEditType.ADD
+        autoReplyEntity: AutoReplyEntity, addEditType: AddEditType = AddEditType.ADD
     ) {
         viewModelScope.launch(Dispatchers.IO) {
             repository.addNewAutoReply(autoReplyEntity, addEditType)
@@ -85,11 +79,6 @@ class AddEditAutoReplyScreenViewModel @Inject constructor(
     }
 
     fun updateRule(rule: AutoReplyEntity) = repository.updateRule(rule)
-
-
-    companion object {
-        const val MAX_CHARACTER_LIMIT = 160
-    }
 
 
 }

@@ -71,7 +71,7 @@ fun ManageScheduleScreen(
             ) {
                 Button(
                     modifier = Modifier.fillMaxWidth(),
-                    onClick = {}
+                    onClick = { navController.navigateUp() }
                 ) {
                     Text("Done")
                 }

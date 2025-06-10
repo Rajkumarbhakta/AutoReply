@@ -43,7 +43,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
-import coil3.compose.AsyncImage
 import coil3.compose.SubcomposeAsyncImage
 import com.rkbapps.autoreply.models.Contact
 import com.rkbapps.autoreply.ui.composables.CommonSearchBar
@@ -67,28 +66,29 @@ fun ChooseContactScreen(
     val contacts = viewModel.contacts.collectAsStateWithLifecycle()
     val rule = viewModel.rule.collectAsStateWithLifecycle()
 
-    val permissionLauncher =
-        rememberLauncherForActivityResult(
-            contract = ActivityResultContracts.RequestPermission(),
-            onResult = { granted ->
-                if (granted) {
-                    when(contactChooseType){
-                        ChooseContactType.INCLUDE -> viewModel.loadIncludeContacts()
-                        ChooseContactType.EXCLUDE -> viewModel.loadExcludeContacts()
-                    }
-                    Toast.makeText(context, "Notification permission granted", Toast.LENGTH_SHORT).show()
-                } else {
-                    Toast.makeText(context, "Notification permission denied", Toast.LENGTH_SHORT).show()
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { granted ->
+            if (granted) {
+                when (contactChooseType) {
+                    ChooseContactType.INCLUDE -> viewModel.loadIncludeContacts()
+                    ChooseContactType.EXCLUDE -> viewModel.loadExcludeContacts()
                 }
+                Toast.makeText(context, "Notification permission granted", Toast.LENGTH_SHORT)
+                    .show()
+            } else {
+                Toast.makeText(context, "Notification permission denied", Toast.LENGTH_SHORT)
+                    .show()
             }
-        )
+        }
+    )
 
 
     LaunchedEffect(key1 = viewModel.isContactPermissionGranted(context)) {
         if (viewModel.isContactPermissionGranted(context) == false) {
             takePermission(permissionLauncher)
         } else {
-            when(contactChooseType){
+            when (contactChooseType) {
                 ChooseContactType.INCLUDE -> viewModel.loadIncludeContacts()
                 ChooseContactType.EXCLUDE -> viewModel.loadExcludeContacts()
             }
@@ -124,7 +124,7 @@ fun ChooseContactScreen(
             ) {
                 Button(
                     modifier = Modifier.fillMaxWidth(),
-                    onClick = {}
+                    onClick = { navController.navigateUp() }
                 ) {
                     Text("Done")
                 }
@@ -143,6 +143,7 @@ fun ChooseContactScreen(
                     query = query.value
                 ) {
                     query.value = it
+                    viewModel.searchContacts(it)
                 }
             }
             item {
@@ -160,7 +161,7 @@ fun ChooseContactScreen(
                 ContactItem(
                     contact = it,
                     isSelected = isContactSelected,
-                ){
+                ) {
                     val update = rule.value.copy(
                         includeContacts = if (contactChooseType == ChooseContactType.INCLUDE) {
                             if (isContactSelected) {
@@ -217,7 +218,7 @@ fun ContactItem(
                 contentDescription = "Contact Image",
                 modifier = Modifier.fillMaxSize(),
                 error = {
-                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center){
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Text(
                             text = contact.name?.firstOrNull()?.toString() ?: "?",
                             style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
