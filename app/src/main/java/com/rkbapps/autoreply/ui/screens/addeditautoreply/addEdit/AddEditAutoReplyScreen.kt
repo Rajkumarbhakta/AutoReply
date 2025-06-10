@@ -1,5 +1,6 @@
 package com.rkbapps.autoreply.ui.screens.addeditautoreply.addEdit
 
+import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -38,6 +39,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -45,6 +47,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -67,6 +70,8 @@ import com.rkbapps.autoreply.ui.theme.secondaryColor
 import com.rkbapps.autoreply.ui.theme.surfaceColor
 import com.rkbapps.autoreply.utils.ChooseContactType
 import com.rkbapps.autoreply.utils.ReplyType
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -103,6 +108,12 @@ fun AddEditScreen(
     navController: NavHostController,
     viewModel: AddEditAutoReplyScreenViewModel
 ) {
+
+    val context = LocalContext.current
+
+    val rule = viewModel.rule.collectAsStateWithLifecycle()
+    val ruleAddUpdateStatus = viewModel.ruleAddUpdateStatus.collectAsStateWithLifecycle().value
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -127,8 +138,27 @@ fun AddEditScreen(
         },
         containerColor = surfaceColor
     ) { innerPadding ->
+        LaunchedEffect(ruleAddUpdateStatus.isError,ruleAddUpdateStatus.data) {
+            when{
+                ruleAddUpdateStatus.isError->{
+                    withContext (Dispatchers.Main){
+                        Toast.makeText(
+                            context, ruleAddUpdateStatus.message ?: "Something went wrong", Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+                ruleAddUpdateStatus.data!=null->{
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(
+                            context, "Rule saved successfully", Toast.LENGTH_SHORT
+                        ).show()
+                        navController.navigateUp()
+                    }
+                }
+            }
+        }
 
-        val rule = viewModel.rule.collectAsStateWithLifecycle()
+
 
         LazyColumn(
             modifier = Modifier
@@ -307,7 +337,9 @@ fun AddEditScreen(
                         Text("Delete")
                     }
                     Button(
-                        onClick = {},
+                        onClick = {
+                            viewModel.addNewAutoReply(autoReplyEntity = rule.value)
+                        },
                         colors = ButtonDefaults.buttonColors(
                             containerColor = primaryColor,
                         )

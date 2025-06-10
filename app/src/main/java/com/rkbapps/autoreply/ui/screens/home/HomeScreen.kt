@@ -202,7 +202,7 @@ fun HomeScreen(navController: NavHostController, viewModel: HomeScreenViewModel 
             }
 
             items(count = 20,) {
-                RulesItem()
+//                RulesItem()
             }
 
            /* when {

@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -23,17 +24,24 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
+import com.rkbapps.autoreply.data.AutoReplyEntity
 import com.rkbapps.autoreply.navigation.NavigationRoutes
 import com.rkbapps.autoreply.ui.composables.CommonSearchBar
 import okhttp3.Route
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AutoReplyRulesScreen(navController: NavHostController) {
-
+fun AutoReplyRulesScreen(
+    navController: NavHostController,
+    viewModel: AutoReplyRulesViewModel = hiltViewModel()
+) {
+    val rules = viewModel.autoReplyRules.collectAsStateWithLifecycle().value
     val searchQuery = remember { mutableStateOf("") }
 
 
@@ -74,33 +82,41 @@ fun AutoReplyRulesScreen(navController: NavHostController) {
                 }
             }
 
-            items(30) {
-                RulesItem()
+            items(items = rules, key = { it.id }) {rule->
+                RulesItem(rule = rule) {
+                    val update = rule.copy(isActive = it)
+                    viewModel.updateRule(update)
+                }
             }
             
         }
-
     }
 
 }
 
 
-@Preview
 @Composable
-fun RulesItem(modifier: Modifier = Modifier) {
+fun RulesItem(
+    modifier: Modifier = Modifier,
+    rule: AutoReplyEntity,
+    onSwitchChange: (Boolean) -> Unit = { /*TODO*/ }
+) {
     Row(modifier = modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
         ) {
-        Column {
-            Text("Greeting Rule", style = MaterialTheme.typography.titleMedium)
-            Text("Target: Individual", style = MaterialTheme.typography.bodySmall)
-            Text("Trigger: Contains 'Hello'",style = MaterialTheme.typography.bodySmall)
-            Text("Reply: Hi there! How can I help?",style = MaterialTheme.typography.bodySmall)
+        Column(modifier=modifier
+            .weight(1f)
+            .padding(end = 10.dp)) {
+            Text(rule.name, style = MaterialTheme.typography.titleMedium)
+            Text("Target: ${rule.replyType.name}", style = MaterialTheme.typography.bodySmall)
+            Text("Trigger: ${rule.matchingType.value} '${rule.trigger}'",style = MaterialTheme.typography.bodySmall,
+                maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text("Reply: ${rule.reply}",style = MaterialTheme.typography.bodySmall,maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
         Switch(
-            checked = true,
-            onCheckedChange = {}
+            checked = rule.isActive,
+            onCheckedChange = onSwitchChange
         )
     }
 }

@@ -40,8 +40,9 @@ class AddEditAutoReplyScreenViewModel @Inject constructor(
     private var contactChooseType: ChooseContactType? = null
     val rule = repository.ruleState
 
-
     val contacts = repository.contactsState
+
+    val ruleAddUpdateStatus = repository.ruleAddUpdateStatus
 
     fun setContactChooseType(type: ChooseContactType) {
         contactChooseType = type
@@ -68,10 +69,10 @@ class AddEditAutoReplyScreenViewModel @Inject constructor(
         }
     }
 
-    val ruleState = repository.ruleState
+
 
     fun addNewAutoReply(
-        autoReplyEntity: AutoReplyEntity, addEditType: AddEditType = AddEditType.ADD
+        autoReplyEntity: AutoReplyEntity , addEditType: AddEditType = AddEditType.ADD
     ) {
         viewModelScope.launch(Dispatchers.IO) {
             repository.addNewAutoReply(autoReplyEntity, addEditType)

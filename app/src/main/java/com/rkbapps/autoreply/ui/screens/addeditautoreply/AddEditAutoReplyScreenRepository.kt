@@ -80,24 +80,18 @@ class AddEditAutoReplyScreenRepository @Inject constructor(
     ) {
         _ruleAddUpdateStatus.emit(UiState(isLoading = true))
         try {
+            if (autoReplyEntity.name.isBlank()) {
+                _ruleAddUpdateStatus.emit(UiState(isError = true, message = "Rule name cannot be empty"))
+                return
+            }
             if (autoReplyEntity.reply.isBlank()) {
-                _ruleAddUpdateStatus.emit(
-                    UiState(
-                        isError = true,
-                        message = "Send message cannot be empty"
-                    )
-                )
+                _ruleAddUpdateStatus.emit(UiState(isError = true, message = "Send message cannot be empty"))
                 return
             }
-            if (autoReplyEntity.trigger.isBlank()) {
-                _ruleAddUpdateStatus.emit(
-                    UiState(
-                        isError = true,
-                        message = "Receive message cannot be empty"
-                    )
-                )
+            if (autoReplyEntity.trigger.isBlank()) { _ruleAddUpdateStatus.emit(UiState(isError = true, message = "Receive message cannot be empty"))
                 return
             }
+
             if (addEditType == AddEditType.ADD) {
                 autoReplyDao.insertAutoReply(autoReplyEntity)
             } else {
