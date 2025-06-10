@@ -43,19 +43,9 @@ class NotificationRepository @Inject constructor(
         private set
 
     init {
-//        coroutineScope.launch {
-//            preferenceManager.isAutoReplyEnableFlow.collect {
-//                isAutoReplyEnabled = it
-//            }
-//        }
         coroutineScope.launch {
             preferenceManager.isSmartReplyEnableFlow.collect {
                 isSmartReplyEnabled = it
-            }
-        }
-        coroutineScope.launch {
-            preferenceManager.replyTypeFlow.collect {
-                replyType = ReplyType.valueOf(it.uppercase())
             }
         }
     }

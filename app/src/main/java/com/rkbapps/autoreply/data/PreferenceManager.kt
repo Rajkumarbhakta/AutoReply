@@ -23,7 +23,6 @@ class PreferenceManager @Inject constructor(
     companion object{
         val IS_AUTO_REPLY_ENABLED = booleanPreferencesKey("is_auto_reply_enabled")
         val IS_SMART_REPLY_ENABLED = booleanPreferencesKey("is_smart_reply_enabled")
-        val REPLY_TYPE = stringPreferencesKey("reply_type")
     }
 
     val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = context.packageName)
@@ -39,13 +38,6 @@ class PreferenceManager @Inject constructor(
             it[IS_SMART_REPLY_ENABLED] == true
     }
 
-    val replyTypeFlow:Flow<String> = context.dataStore.data
-        .catch { emit(emptyPreferences()) }
-        .map {
-        it[REPLY_TYPE]?: ReplyType.INDIVIDUAL.name
-    }
-
-
     suspend fun changeAutoReplyStatus(status:Boolean){
         context.dataStore.edit {
             it[IS_AUTO_REPLY_ENABLED] = status
@@ -57,12 +49,5 @@ class PreferenceManager @Inject constructor(
             it[IS_SMART_REPLY_ENABLED] = status
         }
     }
-
-    suspend fun changeReplyType(type:String){
-        context.dataStore.edit {
-            it[REPLY_TYPE] = type
-        }
-    }
-
 
 }

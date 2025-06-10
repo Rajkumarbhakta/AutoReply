@@ -83,6 +83,16 @@ fun AutoReplyRulesScreen(
                 }
             }
 
+            if (rules.isEmpty()){
+                item {
+                    Text(
+                        "No rules found",
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.padding(vertical = 20.dp),
+                    )
+                }
+            }
+
             items(items = rules, key = { it.id }) { rule ->
                 RulesItem(
                     rule = rule,

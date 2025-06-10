@@ -23,9 +23,12 @@ class HomeScreenRepository @Inject constructor(
     val isServiceRunning = KeepAliveService.isRunning
 
 
-    private val _autoReplyList = MutableStateFlow(UiState<List<AutoReplyEntity>>())
-    val autoReplyList = _autoReplyList.asStateFlow()
+    val autoReplyList = dataBase.getActiveAutoReplies()
 
+
+    suspend fun updateRuleActiveStatus(id: Int, isActive: Boolean) {
+        dataBase.updateAutoReplyActiveStatus(id, isActive)
+    }
 
 
 
@@ -58,25 +61,6 @@ class HomeScreenRepository @Inject constructor(
 
     fun isNotificationListenPermissionEnable(): Boolean = permissionManager.isNotificationPermissionGranted()
 
-    suspend fun getAllAutoReply() {
-        _autoReplyList.emit(UiState(isLoading = true))
-        try {
-            val autoReplyList = dataBase.getAllAutoReplies()
-           autoReplyList.collect {
-               _autoReplyList.emit(UiState(data = it))
-           }
-        }catch (e: Exception){
-            _autoReplyList.emit(UiState(isError = true, message = e.localizedMessage))
-        }
-    }
-
-    suspend fun deleteAutoReply(data: AutoReplyEntity){
-        try {
-            dataBase.deleteAutoReply(data)
-        }catch (e: Exception){
-            e.printStackTrace()
-        }
-    }
 
 
 
