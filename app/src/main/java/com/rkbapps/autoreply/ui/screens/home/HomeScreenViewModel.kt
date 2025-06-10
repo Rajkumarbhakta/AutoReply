@@ -57,9 +57,6 @@ class HomeScreenViewModel @Inject constructor(
     fun requestNotificationPermission() = repository.requestNotificationPermission()
     fun isNotificationListenPermissionEnable() = repository.isNotificationListenPermissionEnable()
 
-    fun onEditClick(navController: NavHostController, data: AutoReplyEntity){
-        navController.navigate(route = AddEditAutoReply(gson.toJson(data)))
-    }
 
     fun onDeleteClick(data: AutoReplyEntity) {
         viewModelScope.launch(Dispatchers.IO) {

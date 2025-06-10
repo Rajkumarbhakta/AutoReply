@@ -12,7 +12,7 @@ sealed class NavigationRoutes{
     @Serializable
     object Settings: NavigationRoutes()
     @Serializable
-    data class AddEditAutoReply(val data:String?=null): NavigationRoutes()
+    data class AddEditAutoReply(val id: Int?=null): NavigationRoutes()
     @Serializable
     data object AddEdit: NavigationRoutes()
     @Serializable

@@ -74,6 +74,13 @@ class AddEditAutoReplyScreenRepository @Inject constructor(
         }
     }
 
+    suspend fun loadRule(id: Int) {
+        val autoReplyEntity = autoReplyDao.getAutoReplyById(id)
+        autoReplyEntity?.let {
+            rule.emit(it)
+        }
+    }
+
     suspend fun addNewAutoReply(
         autoReplyEntity: AutoReplyEntity,
         addEditType: AddEditType = AddEditType.ADD
@@ -92,10 +99,9 @@ class AddEditAutoReplyScreenRepository @Inject constructor(
                 return
             }
 
-            if (addEditType == AddEditType.ADD) {
-                autoReplyDao.insertAutoReply(autoReplyEntity)
-            } else {
-                autoReplyDao.updateAutoReply(autoReplyEntity)
+            when(addEditType){
+                AddEditType.ADD -> autoReplyDao.insertAutoReply(autoReplyEntity)
+                AddEditType.EDIT -> autoReplyDao.updateAutoReply(autoReplyEntity)
             }
             _ruleAddUpdateStatus.emit(UiState(data = autoReplyEntity))
 

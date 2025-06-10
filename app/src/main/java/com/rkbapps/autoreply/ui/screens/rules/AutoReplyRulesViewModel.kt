@@ -1,5 +1,6 @@
 package com.rkbapps.autoreply.ui.screens.rules
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rkbapps.autoreply.data.AutoReplyEntity
@@ -13,10 +14,11 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AutoReplyRulesViewModel @Inject constructor(
-    private val repository: AutoReplyRulesRepository
+    private val repository: AutoReplyRulesRepository,
 ): ViewModel() {
 
     val autoReplyRules = repository.autoReplyRules.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+
 
     fun updateRule(autoReply: AutoReplyEntity){
         viewModelScope.launch {

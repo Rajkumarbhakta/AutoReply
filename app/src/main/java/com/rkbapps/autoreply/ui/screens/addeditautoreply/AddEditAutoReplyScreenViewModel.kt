@@ -21,7 +21,7 @@ import javax.inject.Inject
 @HiltViewModel
 class AddEditAutoReplyScreenViewModel @Inject constructor(
     private val repository: AddEditAutoReplyScreenRepository,
-    private val saveStateHandle: SavedStateHandle,
+    saveStateHandle: SavedStateHandle,
     private val gson: Gson
 ) : ViewModel() {
 
@@ -43,6 +43,16 @@ class AddEditAutoReplyScreenViewModel @Inject constructor(
     val contacts = repository.contactsState
 
     val ruleAddUpdateStatus = repository.ruleAddUpdateStatus
+
+
+    init {
+        viewModelScope.launch {
+            data.id?.let {
+                repository.loadRule(it)
+            }
+        }
+    }
+
 
     fun setContactChooseType(type: ChooseContactType) {
         contactChooseType = type
@@ -72,7 +82,8 @@ class AddEditAutoReplyScreenViewModel @Inject constructor(
 
 
     fun addNewAutoReply(
-        autoReplyEntity: AutoReplyEntity , addEditType: AddEditType = AddEditType.ADD
+        autoReplyEntity: AutoReplyEntity,
+        addEditType: AddEditType = if (data.id == null) AddEditType.ADD else AddEditType.EDIT
     ) {
         viewModelScope.launch(Dispatchers.IO) {
             repository.addNewAutoReply(autoReplyEntity, addEditType)

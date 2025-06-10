@@ -1,5 +1,6 @@
 package com.rkbapps.autoreply.ui.screens.rules
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -82,10 +83,15 @@ fun AutoReplyRulesScreen(
                 }
             }
 
-            items(items = rules, key = { it.id }) {rule->
-                RulesItem(rule = rule) {
-                    val update = rule.copy(isActive = it)
-                    viewModel.updateRule(update)
+            items(items = rules, key = { it.id }) { rule ->
+                RulesItem(
+                    rule = rule,
+                    onSwitchChange = {
+                        val update = rule.copy(isActive = it)
+                        viewModel.updateRule(update)
+                    }
+                ) {
+                    navController.navigate(NavigationRoutes.AddEditAutoReply(id = it))
                 }
             }
             
@@ -99,20 +105,37 @@ fun AutoReplyRulesScreen(
 fun RulesItem(
     modifier: Modifier = Modifier,
     rule: AutoReplyEntity,
-    onSwitchChange: (Boolean) -> Unit = { /*TODO*/ }
+    onSwitchChange: (Boolean) -> Unit = { /*TODO*/ },
+    onItemClick:(Int)-> Unit
 ) {
-    Row(modifier = modifier.fillMaxWidth(),
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable {
+                onItemClick(rule.id)
+            },
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Column(
+            modifier = modifier
+                .weight(1f)
+                .padding(end = 10.dp)
         ) {
-        Column(modifier=modifier
-            .weight(1f)
-            .padding(end = 10.dp)) {
             Text(rule.name, style = MaterialTheme.typography.titleMedium)
             Text("Target: ${rule.replyType.name}", style = MaterialTheme.typography.bodySmall)
-            Text("Trigger: ${rule.matchingType.value} '${rule.trigger}'",style = MaterialTheme.typography.bodySmall,
-                maxLines = 1, overflow = TextOverflow.Ellipsis)
-            Text("Reply: ${rule.reply}",style = MaterialTheme.typography.bodySmall,maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(
+                "Trigger: ${rule.matchingType.value} '${rule.trigger}'",
+                style = MaterialTheme.typography.bodySmall,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Text(
+                "Reply: ${rule.reply}",
+                style = MaterialTheme.typography.bodySmall,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
         }
         Switch(
             checked = rule.isActive,
