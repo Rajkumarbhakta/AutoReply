@@ -43,7 +43,7 @@ class AddEditAutoReplyScreenRepository @Inject constructor(
         val contactsList = allContacts
         val excludedContacts = rule.value.excludeContacts
         val filteredContacts = contactsList.filter { contact ->
-            excludedContacts.none { it == contact.phoneNumber }
+            excludedContacts.none { it == contact }
         }
         contacts.emit(filteredContacts)
     }
@@ -52,7 +52,7 @@ class AddEditAutoReplyScreenRepository @Inject constructor(
         val contactsList = allContacts
         val includedContacts = rule.value.includeContacts
         val filteredContacts = contactsList.filter { contact ->
-            includedContacts.none { it == contact.phoneNumber }
+            includedContacts.none { it == contact }
         }
         contacts.emit(filteredContacts)
     }

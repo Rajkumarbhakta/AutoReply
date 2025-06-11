@@ -5,17 +5,14 @@ import android.app.job.JobInfo
 import android.app.job.JobScheduler
 import android.content.ComponentName
 import android.content.Context
-import android.icu.util.Calendar
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import android.util.Log
 import com.rkbapps.autoreply.data.AutoReplyDao
 import com.rkbapps.autoreply.data.AutoReplyEntity
 import com.rkbapps.autoreply.data.PreferenceManager
-import com.rkbapps.autoreply.data.Time
 import com.rkbapps.autoreply.services.KeepAliveService
 import com.rkbapps.autoreply.services.RestartServiceJob
-import com.rkbapps.autoreply.utils.ReplyType
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -24,10 +21,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import java.time.LocalTime
-import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -41,11 +35,8 @@ class NotificationRepository @Inject constructor(
 ) {
 
     private val coroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-
     private var isBusy = false
 
-
-    //private var autoReplyList = listOf<AutoReplyEntity>()
     private var autoReplyList = dataBase.getActiveAutoReplies().stateIn(
         coroutineScope,
         SharingStarted.Eagerly,
@@ -78,7 +69,7 @@ class NotificationRepository @Inject constructor(
         notification: StatusBarNotification
     ) {
         val data = NotificationParser.parseNotification(notification)
-        if (isBusy){
+        if (isBusy) {
             Log.d("AutoReply", "Service is busy, skipping notification: $data")
             return
         }
@@ -108,7 +99,8 @@ class NotificationRepository @Inject constructor(
                         Log.d("AutoReply", "Delay: ${rule.delay}")
                         delay(rule.delay)
                         Log.d("AutoReply", "Processing reply for rule: ${rule.trigger}")
-                        val replyMessage = getReplyMessage(message = text, isGroupMessage = isGroupMessage, rule = rule)
+                        val replyMessage =
+                            getReplyMessage(message = text, title = title, rule = rule)
                         Log.d("AutoReply", "Reply message: $replyMessage")
                         replyMessage?.let {
                             reply(notificationService, notification, replyMessage)
@@ -123,12 +115,17 @@ class NotificationRepository @Inject constructor(
     }
 
 
-    fun getReplyMessage(message: String,isGroupMessage:Boolean,rule: AutoReplyEntity): String? {
-        return databaseReplyManager.generateReply(message,isGroupMessage,rule)
+    fun getReplyMessage(message: String, title: String, rule: AutoReplyEntity): String? {
+        return databaseReplyManager.generateReply(message, title, rule)
     }
 
-    fun findRule(rules: List<AutoReplyEntity>,txt: String): AutoReplyEntity? {
-        val data = rules.find { txt.lowercase() == it.trigger.lowercase() } ?: rules.find { txt.startsWith(it.trigger, ignoreCase = true) }
+    fun findRule(rules: List<AutoReplyEntity>, txt: String): AutoReplyEntity? {
+        val data = rules.find { txt.lowercase() == it.trigger.lowercase() } ?: rules.find {
+            txt.startsWith(
+                it.trigger,
+                ignoreCase = true
+            )
+        }
         return data ?: rules.find { txt.contains(it.trigger, ignoreCase = true) }
     }
 
@@ -164,7 +161,7 @@ class NotificationRepository @Inject constructor(
         if (action != null) {
             Log.d("NotificationListenerService", "Found reply action")
             try {
-                clickButton(notificationService, sbn,)
+                clickButton(notificationService, sbn)
                 action.sendReply(applicationContext, message)
                 Log.d("NotificationListenerService", "After send reply")
             } catch (e: PendingIntent.CanceledException) {

@@ -157,8 +157,8 @@ fun ChooseContactScreen(
                 it.id + it.phoneNumber
             }) {
                 val isContactSelected = when (contactChooseType) {
-                    ChooseContactType.INCLUDE -> rule.value.includeContacts.contains(it.phoneNumber)
-                    ChooseContactType.EXCLUDE -> rule.value.excludeContacts.contains(it.phoneNumber)
+                    ChooseContactType.INCLUDE -> rule.value.includeContacts.contains(it)
+                    ChooseContactType.EXCLUDE -> rule.value.excludeContacts.contains(it)
                 }
                 ContactItem(
                     contact = it,
@@ -167,18 +167,18 @@ fun ChooseContactScreen(
                     val update = rule.value.copy(
                         includeContacts = if (contactChooseType == ChooseContactType.INCLUDE) {
                             if (isContactSelected) {
-                                rule.value.includeContacts - it.phoneNumber
+                                rule.value.includeContacts - it
                             } else {
-                                rule.value.includeContacts + it.phoneNumber
+                                rule.value.includeContacts + it
                             }
                         } else {
                             rule.value.includeContacts
                         },
                         excludeContacts = if (contactChooseType == ChooseContactType.EXCLUDE) {
                             if (isContactSelected) {
-                                rule.value.excludeContacts - it.phoneNumber
+                                rule.value.excludeContacts - it
                             } else {
-                                rule.value.excludeContacts + it.phoneNumber
+                                rule.value.excludeContacts + it
                             }
                         } else {
                             rule.value.excludeContacts

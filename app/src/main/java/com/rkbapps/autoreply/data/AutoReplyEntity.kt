@@ -3,6 +3,7 @@ package com.rkbapps.autoreply.data
 import android.icu.util.Calendar
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.rkbapps.autoreply.models.Contact
 import com.rkbapps.autoreply.utils.ReplyType
 
 @Entity(tableName = "auto_reply")
@@ -15,8 +16,8 @@ data class AutoReplyEntity(
     val matchingType: MatchingType = MatchingType.STARTS_WITH,
     val delay: Long = 0L,
     val replyType: ReplyType = ReplyType.INDIVIDUAL,
-    val includeContacts: List<String> = emptyList(),
-    val excludeContacts: List<String> = emptyList(),
+    val includeContacts: List<Contact> = emptyList(),
+    val excludeContacts: List<Contact> = emptyList(),
     val schedule: ReplySchedule? = null,
     val isActive: Boolean = true
 )

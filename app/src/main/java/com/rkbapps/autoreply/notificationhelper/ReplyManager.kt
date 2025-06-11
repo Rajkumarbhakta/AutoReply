@@ -18,7 +18,7 @@ import java.util.UUID
 import javax.inject.Inject
 
 interface ReplyManager {
-    fun generateReply(trigger: String,isGroupMessage:Boolean,rule: AutoReplyEntity): String?
+    fun generateReply(trigger: String,title: String,rule: AutoReplyEntity): String?
 }
 
 open class DatabaseReplyManager @Inject constructor() : ReplyManager {
@@ -55,11 +55,13 @@ open class DatabaseReplyManager @Inject constructor() : ReplyManager {
 
     override fun generateReply(
         trigger: String,
-        isGroupMessage: Boolean,
+        title: String,
         rule: AutoReplyEntity
     ): String? {
+        val isGroupMessage = title.contains(":")
         val isMatchTargetAudience = isMatchingTargetAudience(rule.replyType, isGroupMessage)
-        if (isMatchTargetAudience) {
+        val isContactConditionMet = checkContactCondition(rule, title)
+        if (isMatchTargetAudience && isContactConditionMet) {
             if (rule.schedule == null) {
                 // If no schedule is set, we can generate a reply immediately
                 return getReplyMessage(rule.matchingType, rule.reply, trigger)
@@ -84,6 +86,34 @@ open class DatabaseReplyManager @Inject constructor() : ReplyManager {
             ReplyType.INDIVIDUAL -> !isGroupMessage
             ReplyType.GROUP -> isGroupMessage
             ReplyType.BOTH -> true
+        }
+
+    }
+
+    private fun checkContactCondition(rule: AutoReplyEntity,title: String): Boolean{
+        if (title.contains(":")) return true
+        if (rule.replyType== ReplyType.INDIVIDUAL){
+            val includedContacts = rule.includeContacts
+            val excludedContacts = rule.excludeContacts
+            if (includedContacts.isNotEmpty()) {
+                // Check if the sender is in the included contacts
+                val isIncluded = includedContacts.any { contact ->
+                    title.contains(contact.name?:"", ignoreCase = true) || title.contains(contact.phoneNumber, ignoreCase = true)
+                }
+                if (!isIncluded) return false
+            }
+            // If there are excluded contacts, check if the sender is in the excluded contacts
+            if (excludedContacts.isNotEmpty()) {
+                // Check if the sender is in the excluded contacts
+                val isExcluded = excludedContacts.any { contact ->
+                    title.contains(contact.name?:"", ignoreCase = true) || title.contains(contact.phoneNumber, ignoreCase = true)
+                }
+                if (isExcluded) return false
+            }
+            // If no contacts are specified, we assume the rule applies to all individual messages
+            return true
+        }else{
+            return true
         }
 
     }
@@ -157,7 +187,7 @@ class SmartReplyManager @Inject constructor() : ReplyManager {
 
     override fun generateReply(
         trigger: String,
-        isGroupMessage:Boolean,
+        title: String,
         rule: AutoReplyEntity
     ): String? {
         return generateSmartReply(trigger)

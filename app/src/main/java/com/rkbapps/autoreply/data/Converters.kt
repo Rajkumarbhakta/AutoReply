@@ -3,6 +3,7 @@ package com.rkbapps.autoreply.data
 import androidx.room.TypeConverter
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.rkbapps.autoreply.models.Contact
 
 class Converters {
 
@@ -57,6 +58,16 @@ class Converters {
     @TypeConverter
     fun toTime(value: String?): Time? {
         return value?.let { gson.fromJson(it, Time::class.java) }
+    }
+
+    @TypeConverter
+    fun fromContactList(value: List<Contact>): String {
+        return gson.toJson(value)
+    }
+    @TypeConverter
+    fun toContactList(value: String): List<Contact> {
+        val listType = object : TypeToken<List<Contact>>() {}.type
+        return gson.fromJson(value, listType)
     }
 
 }
