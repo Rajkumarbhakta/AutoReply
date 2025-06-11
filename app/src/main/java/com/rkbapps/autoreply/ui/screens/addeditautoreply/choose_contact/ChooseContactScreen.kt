@@ -153,7 +153,9 @@ fun ChooseContactScreen(
                 )
             }
 
-            items(contacts.value) {
+            items(contacts.value, key = {
+                it.id + it.phoneNumber
+            }) {
                 val isContactSelected = when (contactChooseType) {
                     ChooseContactType.INCLUDE -> rule.value.includeContacts.contains(it.phoneNumber)
                     ChooseContactType.EXCLUDE -> rule.value.excludeContacts.contains(it.phoneNumber)

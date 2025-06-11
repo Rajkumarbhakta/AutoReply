@@ -10,6 +10,7 @@ import com.rkbapps.autoreply.data.AutoReplyEntity
 import com.rkbapps.autoreply.data.DaysOfWeek
 import com.rkbapps.autoreply.data.MatchingType
 import com.rkbapps.autoreply.data.Time
+import com.rkbapps.autoreply.utils.ReplyType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -17,7 +18,7 @@ import java.util.UUID
 import javax.inject.Inject
 
 interface ReplyManager {
-    fun generateReply(trigger: String,rule: AutoReplyEntity): String?
+    fun generateReply(trigger: String,isGroupMessage:Boolean,rule: AutoReplyEntity): String?
 }
 
 open class DatabaseReplyManager @Inject constructor() : ReplyManager {
@@ -52,27 +53,43 @@ open class DatabaseReplyManager @Inject constructor() : ReplyManager {
         }
     }
 
-    override fun generateReply(trigger: String,rule: AutoReplyEntity): String? {
-        if (rule.schedule==null){
-            // If no schedule is set, we can generate a reply immediately
-            return getReplyMessage(rule.matchingType, rule.reply, trigger)
-        }else{
-            val currentTime = getCurrentTime()
-            val currentDay = getCurrentDayOfWeekCalendar()
-            if (rule.schedule.startTime != null && rule.schedule.endTime != null) {
-                val startTime = rule.schedule.startTime
-                val endTime = rule.schedule.endTime
-                val isValidTime = isCurrentTimeBetween(currentTime, startTime, endTime)
-                if (isValidTime && rule.schedule.daysOfWeek.contains(currentDay)){
-                    return getReplyMessage(rule.matchingType, rule.reply,trigger)
+    override fun generateReply(
+        trigger: String,
+        isGroupMessage: Boolean,
+        rule: AutoReplyEntity
+    ): String? {
+        val isMatchTargetAudience = isMatchingTargetAudience(rule.replyType, isGroupMessage)
+        if (isMatchTargetAudience) {
+            if (rule.schedule == null) {
+                // If no schedule is set, we can generate a reply immediately
+                return getReplyMessage(rule.matchingType, rule.reply, trigger)
+            } else {
+                val currentTime = getCurrentTime()
+                val currentDay = getCurrentDayOfWeekCalendar()
+                if (rule.schedule.startTime != null && rule.schedule.endTime != null) {
+                    val startTime = rule.schedule.startTime
+                    val endTime = rule.schedule.endTime
+                    val isValidTime = isCurrentTimeBetween(currentTime, startTime, endTime)
+                    if (isValidTime && rule.schedule.daysOfWeek.contains(currentDay)) {
+                        return getReplyMessage(rule.matchingType, rule.reply, trigger)
+                    }
                 }
             }
         }
         return null
     }
 
+    private fun isMatchingTargetAudience(targetAudience: ReplyType, isGroupMessage: Boolean): Boolean {
+        return when (targetAudience) {
+            ReplyType.INDIVIDUAL -> !isGroupMessage
+            ReplyType.GROUP -> isGroupMessage
+            ReplyType.BOTH -> true
+        }
+
+    }
+
     private fun getReplyMessage(
-        matchingType:MatchingType,
+        matchingType: MatchingType,
         reply: String,
         trigger: String
     ): String? = when (matchingType) {
@@ -140,6 +157,7 @@ class SmartReplyManager @Inject constructor() : ReplyManager {
 
     override fun generateReply(
         trigger: String,
+        isGroupMessage:Boolean,
         rule: AutoReplyEntity
     ): String? {
         return generateSmartReply(trigger)

@@ -21,8 +21,13 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.time.LocalTime
+import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -35,23 +40,17 @@ class NotificationRepository @Inject constructor(
     private val preferenceManager: PreferenceManager
 ) {
 
-    private var autoReplyList = listOf<AutoReplyEntity>()
     private val coroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
-    init {
-        getAllAutoReply()
-    }
+    private var isBusy = false
 
-    fun getAllAutoReply() {
-        try {
-            coroutineScope.launch {
-                val data = dataBase.getAllActiveAutoRepliesOnce()
-                autoReplyList = data
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
+
+    //private var autoReplyList = listOf<AutoReplyEntity>()
+    private var autoReplyList = dataBase.getActiveAutoReplies().stateIn(
+        coroutineScope,
+        SharingStarted.Eagerly,
+        emptyList()
+    )
 
     companion object {
         private val whatsappPackageName = listOf("com.whatsapp.w4b", "com.whatsapp")
@@ -79,7 +78,12 @@ class NotificationRepository @Inject constructor(
         notification: StatusBarNotification
     ) {
         val data = NotificationParser.parseNotification(notification)
+        if (isBusy){
+            Log.d("AutoReply", "Service is busy, skipping notification: $data")
+            return
+        }
         if (whatsappPackageName.contains(data.packageName) && KeepAliveService.isRunning.value) {
+            isBusy = true
             Log.d("NotificationListenerService", "onNotificationPosted : $data")
             val extras = notification.notification.extras
             val title = data.title // Sender name
@@ -91,28 +95,40 @@ class NotificationRepository @Inject constructor(
                     Log.d("NotificationListenerService", "Notification already handled")
                     clickButton(notificationService, notification, "Mark as read")
                     handledNotifications.remove(notification.key)
+                    isBusy = false
                     return
                 }
                 // If it's a personal message (not a group), reply
-                val txt = text.replace(":", "")
-                val rule = findRule(autoReplyList, txt)
-                if (rule!=null){
-                    val replyMessage = getReplyMessage(message = text, rule = rule)
-                    replyMessage?.let {
-                        reply(notificationService, notification, replyMessage)
+
+                coroutineScope.launch {
+                    val isGroupMessage = title.contains(": ")
+                    val rule = findRule(autoReplyList.value, text)
+                    Log.d("AutoReply", "Rule found: ${rule?.trigger} - ${rule?.reply}")
+                    if (rule != null) {
+                        Log.d("AutoReply", "Delay: ${rule.delay}")
+                        delay(rule.delay)
+                        Log.d("AutoReply", "Processing reply for rule: ${rule.trigger}")
+                        val replyMessage = getReplyMessage(message = text, isGroupMessage = isGroupMessage, rule = rule)
+                        Log.d("AutoReply", "Reply message: $replyMessage")
+                        replyMessage?.let {
+                            reply(notificationService, notification, replyMessage)
+                        }
                     }
+                    isBusy = false
+
                 }
+
             }
         }
     }
 
 
-    fun getReplyMessage(message: String,rule: AutoReplyEntity): String? {
-        return databaseReplyManager.generateReply(message,rule)
+    fun getReplyMessage(message: String,isGroupMessage:Boolean,rule: AutoReplyEntity): String? {
+        return databaseReplyManager.generateReply(message,isGroupMessage,rule)
     }
 
     fun findRule(rules: List<AutoReplyEntity>,txt: String): AutoReplyEntity? {
-        val data = rules.find { txt == it.trigger } ?: rules.find { txt.startsWith(it.trigger, ignoreCase = true) }
+        val data = rules.find { txt.lowercase() == it.trigger.lowercase() } ?: rules.find { txt.startsWith(it.trigger, ignoreCase = true) }
         return data ?: rules.find { txt.contains(it.trigger, ignoreCase = true) }
     }
 
@@ -128,7 +144,7 @@ class NotificationRepository @Inject constructor(
     private fun clickButton(
         notificationService: NotificationListenerService,
         sbn: StatusBarNotification,
-        button: String
+        button: String = "Mark as read"
     ) {
         val click: Int? = NotificationUtils.getClickAction(sbn.notification, button)
         if (click != null) {
@@ -148,7 +164,7 @@ class NotificationRepository @Inject constructor(
         if (action != null) {
             Log.d("NotificationListenerService", "Found reply action")
             try {
-                clickButton(notificationService, sbn, "Mark as read")
+                clickButton(notificationService, sbn,)
                 action.sendReply(applicationContext, message)
                 Log.d("NotificationListenerService", "After send reply")
             } catch (e: PendingIntent.CanceledException) {

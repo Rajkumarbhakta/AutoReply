@@ -23,7 +23,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            AutoReplyTheme {
+            AutoReplyTheme(darkTheme = false) {
                 val navController = rememberNavController()
                 Surface {
                     Scaffold(
