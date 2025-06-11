@@ -26,4 +26,6 @@ class AutoReplyRulesViewModel @Inject constructor(
         }
     }
 
+    fun updateQuery(query:String) = repository.updateQuery(query)
+
 }

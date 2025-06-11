@@ -92,6 +92,7 @@ fun AutoReplyRulesScreen(
                     modifier = Modifier.fillMaxWidth(),
                     query = searchQuery.value) {
                     searchQuery.value = it
+                    viewModel.updateQuery(it)
                 }
             }
 
