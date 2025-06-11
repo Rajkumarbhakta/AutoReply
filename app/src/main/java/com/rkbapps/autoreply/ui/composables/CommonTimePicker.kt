@@ -27,9 +27,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.rkbapps.autoreply.data.Time
-import com.rkbapps.autoreply.ui.theme.surfaceColor
-import com.rkbapps.autoreply.ui.theme.textFieldBackGroundLight
-import com.rkbapps.autoreply.ui.theme.textFieldPlaceHolderColor
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -60,8 +57,10 @@ fun CommonTimePicker(
             enabled = false,
             onValueChange = { },
             colors = TextFieldDefaults.colors(
-                focusedContainerColor = textFieldBackGroundLight,
-                unfocusedContainerColor = textFieldBackGroundLight,
+                focusedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                unfocusedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                disabledContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                disabledPlaceholderColor = MaterialTheme.colorScheme.onPrimaryContainer,
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent,
                 disabledIndicatorColor = Color.Transparent
@@ -73,7 +72,6 @@ fun CommonTimePicker(
                 Text(
                     text = "00:00 AM",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = textFieldPlaceHolderColor
                 )
             },
             trailingIcon = {
@@ -121,7 +119,7 @@ fun TimePickerDialog(
         Column {
             TimePicker(
                 modifier = modifier
-                    .background(color = surfaceColor)
+                    .background(color = MaterialTheme.colorScheme.surface)
                     .padding(10.dp),
                 state = sate,
             )

@@ -7,18 +7,17 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
-import android.content.pm.ServiceInfo
-import android.os.Binder
 import android.os.Build
 import android.os.IBinder
 import com.rkbapps.autoreply.R
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import androidx.core.app.ServiceCompat
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import androidx.core.app.ServiceCompat.stopForeground
 
 class KeepAliveService : Service() {
-
 
     companion object {
         private const val NOTIFICATION_ID = 101
@@ -36,11 +35,11 @@ class KeepAliveService : Service() {
         _isRunning.value = true
     }
 
-    @SuppressLint("ForegroundServiceType")
+
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.d("KeepAliveService", "Service Started")
         if (intent?.action == "STOP_SERVICE") {
-            stopForeground(true) // Removes notification
+            stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE)
             stopSelf() // Stops the service
             return START_NOT_STICKY
         }

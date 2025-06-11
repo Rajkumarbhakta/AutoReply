@@ -23,6 +23,7 @@ class PreferenceManager @Inject constructor(
     companion object{
         val IS_AUTO_REPLY_ENABLED = booleanPreferencesKey("is_auto_reply_enabled")
         val IS_SMART_REPLY_ENABLED = booleanPreferencesKey("is_smart_reply_enabled")
+        val IS_DARK_THEME_ENABLED = booleanPreferencesKey("is_dark_theme_enabled")
     }
 
     val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = context.packageName)
@@ -47,6 +48,17 @@ class PreferenceManager @Inject constructor(
     suspend fun changeSmartReplyStatus(status:Boolean){
         context.dataStore.edit {
             it[IS_SMART_REPLY_ENABLED] = status
+        }
+    }
+
+    val isDarkThemeEnabledFlow: Flow<Boolean> = context.dataStore.data
+        .catch { emit(emptyPreferences()) }
+        .map {
+            it[IS_DARK_THEME_ENABLED] == true
+        }
+    suspend fun changeDarkThemeStatus(status: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[IS_DARK_THEME_ENABLED] = status
         }
     }
 

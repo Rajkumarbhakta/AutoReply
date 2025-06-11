@@ -138,7 +138,6 @@ fun AddEditScreen(
             )
 
         },
-        containerColor = surfaceColor
     ) { innerPadding ->
 
         if (isDeleteAlertDialogOpen.value){
@@ -363,11 +362,10 @@ fun AddEditScreen(
                                 isDeleteAlertDialogOpen.value = true
                             },
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = secondaryColor,
-                                contentColor = Color.Black
+                                containerColor = MaterialTheme.colorScheme.secondaryContainer,
                             )
                         ) {
-                            Text("Delete")
+                            Text("Delete",)
                         }
                     }
                     Button(
@@ -375,7 +373,7 @@ fun AddEditScreen(
                             viewModel.addNewAutoReply(autoReplyEntity = rule.value)
                         },
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = primaryColor,
+                            containerColor = MaterialTheme.colorScheme.primary,
                         )
                     ) {
                         Text(text = if (data == null) "Save" else "Update")
@@ -407,7 +405,7 @@ fun CardItems(
             modifier = Modifier
                 .size(50.dp)
                 .clip(RoundedCornerShape(10.dp))
-                .background(color = secondaryColor),
+                .background(color = MaterialTheme.colorScheme.secondaryContainer),
             contentAlignment = Alignment.Center
         ) {
             Icon(

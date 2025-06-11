@@ -8,22 +8,46 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.core.app.NotificationManagerCompat
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.rememberNavController
+import com.rkbapps.autoreply.data.PreferenceManager
 import com.rkbapps.autoreply.navigation.MainNavGraph
 import com.rkbapps.autoreply.ui.composables.BottomNavigation
 import com.rkbapps.autoreply.ui.theme.AutoReplyTheme
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.stateIn
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    @Inject
+    lateinit var preferenceManager: PreferenceManager
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        val darkTheme = preferenceManager.isDarkThemeEnabledFlow.stateIn(
+            lifecycleScope,
+            SharingStarted.Lazily,
+            false
+        )
+
         setContent {
-            AutoReplyTheme(darkTheme = false) {
+            val isDarkThemeEnabled = darkTheme.collectAsStateWithLifecycle()
+
+            AutoReplyTheme(
+                darkTheme = isDarkThemeEnabled.value,
+                dynamicColor = false
+            ) {
                 val navController = rememberNavController()
                 Surface {
                     Scaffold(

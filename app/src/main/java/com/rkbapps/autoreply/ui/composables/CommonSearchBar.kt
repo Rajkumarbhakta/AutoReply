@@ -18,8 +18,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import com.rkbapps.autoreply.ui.theme.textFieldBackGroundLight
-import com.rkbapps.autoreply.ui.theme.textFieldPlaceHolderColor
 
 
 @Composable
@@ -33,8 +31,10 @@ fun CommonSearchBar(
         value = query,
         onValueChange = { onQueryChange(it) },
         colors = TextFieldDefaults.colors(
-            focusedContainerColor = textFieldBackGroundLight,
-            unfocusedContainerColor = textFieldBackGroundLight,
+            focusedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+            unfocusedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+            focusedPlaceholderColor = MaterialTheme.colorScheme.onPrimaryContainer,
+            unfocusedPlaceholderColor = MaterialTheme.colorScheme.onPrimaryContainer,
             focusedIndicatorColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent
         ),
@@ -45,7 +45,6 @@ fun CommonSearchBar(
             Text(
                 text = placeholderText,
                 style = MaterialTheme.typography.bodyMedium,
-                color = textFieldPlaceHolderColor
             )
         },
         leadingIcon = {

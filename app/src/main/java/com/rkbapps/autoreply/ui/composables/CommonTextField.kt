@@ -14,8 +14,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.rkbapps.autoreply.ui.theme.textFieldBackGroundLight
-import com.rkbapps.autoreply.ui.theme.textFieldPlaceHolderColor
 
 
 @Composable
@@ -30,14 +28,17 @@ fun CommonTextField(
     maxLines: Int = Int.MAX_VALUE,
     onTextChange: (text: String) -> Unit = {}
 ) {
+
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         labelText?.let { Text(it, style = MaterialTheme.typography.titleMedium) }
         TextField(
             value = text,
             onValueChange = { onTextChange(it) },
             colors = TextFieldDefaults.colors(
-                focusedContainerColor = textFieldBackGroundLight,
-                unfocusedContainerColor = textFieldBackGroundLight,
+                focusedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                unfocusedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                focusedPlaceholderColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                unfocusedPlaceholderColor = MaterialTheme.colorScheme.onPrimaryContainer,
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent
             ),
@@ -50,7 +51,6 @@ fun CommonTextField(
                 Text(
                     text = placeholderText,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = textFieldPlaceHolderColor
                 )
             },
             trailingIcon = {

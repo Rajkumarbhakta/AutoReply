@@ -135,7 +135,7 @@ class NotificationRepository @Inject constructor(
         notification: StatusBarNotification
     ) {
         val data = NotificationParser.parseNotification(notification)
-        Log.d("NotificationListenerService", "onNotificationRemoved whatsapp : ${data}")
+        Log.d("NotificationListenerService", "onNotificationRemoved whatsapp : $data")
     }
 
     private fun clickButton(

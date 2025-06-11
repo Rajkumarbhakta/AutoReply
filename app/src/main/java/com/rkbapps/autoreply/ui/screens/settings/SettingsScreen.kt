@@ -25,13 +25,20 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.rkbapps.autoreply.ui.theme.surfaceColor
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen(navController: NavHostController) {
+fun SettingsScreen(
+    navController: NavHostController,
+    viewModel: SettingsViewModel = hiltViewModel()
+) {
+
+    var isDark = viewModel.darkTheme.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {
@@ -44,13 +51,10 @@ fun SettingsScreen(navController: NavHostController) {
                 )
             )
         },
-        containerColor = surfaceColor
     ) { innerPadding ->
 
         LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 16.dp),
+            modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
             contentPadding = innerPadding
         ) {
@@ -82,15 +86,16 @@ fun SettingsScreen(navController: NavHostController) {
                         Text(
                             "Enable dark mode for a more comfortable viewing experience.",
                             style = MaterialTheme.typography.bodyMedium.copy(
-                                color = Color(0xff4A739C)
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
                             )
                         )
                     }
                     Switch(
-                        checked = false,
-                        onCheckedChange = { /* Handle dark mode toggle */ },
+                        checked = isDark.value,
+                        onCheckedChange = {
+                            viewModel.changeDarkThemeStatus(it)
+                        },
                     )
-
                 }
             }
 
@@ -156,7 +161,7 @@ fun SettingsCard(
             modifier = Modifier.weight(1f),
             style = MaterialTheme.typography.bodyMedium
         )
-        if (subtitle==null){
+        if (subtitle == null) {
             IconButton(
                 onClick = onClick,
             ) {
@@ -165,7 +170,7 @@ fun SettingsCard(
                     contentDescription = title,
                 )
             }
-        }else{
+        } else {
             Text(
                 subtitle,
                 style = MaterialTheme.typography.bodyMedium

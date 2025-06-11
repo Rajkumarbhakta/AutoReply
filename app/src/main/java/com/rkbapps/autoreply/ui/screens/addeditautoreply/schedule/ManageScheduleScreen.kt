@@ -66,7 +66,7 @@ fun ManageScheduleScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(color = surfaceColor)
+                    .background(color = MaterialTheme.colorScheme.surface)
                     .padding(10.dp)
             ) {
                 Button(

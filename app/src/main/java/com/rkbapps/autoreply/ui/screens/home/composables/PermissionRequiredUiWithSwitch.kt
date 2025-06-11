@@ -32,42 +32,28 @@ fun PermissionRequiredUiWithSwitch(
     val color = animateColorAsState(
         if (isChecked) Color.Green else Color.Red
     )
-    ElevatedCard {
-        Row(
-            modifier = modifier
-                .fillMaxWidth()
-                .padding(10.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
 
-            Row(
-                modifier = Modifier.weight(1f),
-                horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.Start)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .padding(top = 5.dp)
-                        .size(10.dp)
-                        .clip(CircleShape)
-                        .background(color = color.value)
-
-                )
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text,
-                        style = MaterialTheme.typography.titleMedium,
-                    )
-                    Text(
-                        subtitle,
-                        style = MaterialTheme.typography.labelMedium,
-                    )
-                }
-            }
-            Switch(
-                checked = isChecked,
-                onCheckedChange = onCheckedChange
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text,
+                style = MaterialTheme.typography.titleLarge,
+            )
+            Text(
+                subtitle,
+                style = MaterialTheme.typography.labelMedium,
             )
         }
+
+        Switch(
+            checked = isChecked,
+            onCheckedChange = onCheckedChange
+        )
     }
 }
