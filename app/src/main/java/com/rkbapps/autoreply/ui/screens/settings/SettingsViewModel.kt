@@ -3,6 +3,7 @@ package com.rkbapps.autoreply.ui.screens.settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
+import com.rkbapps.autoreply.BuildConfig
 import com.rkbapps.autoreply.data.PreferenceManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
@@ -20,6 +21,8 @@ class SettingsViewModel @Inject constructor(
         SharingStarted.Lazily,
         false
     )
+
+    val appVersion = BuildConfig.VERSION_NAME
 
     fun changeDarkThemeStatus(status:Boolean){
         viewModelScope.launch {

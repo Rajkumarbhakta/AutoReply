@@ -365,7 +365,7 @@ fun AddEditScreen(
                                 containerColor = MaterialTheme.colorScheme.secondaryContainer,
                             )
                         ) {
-                            Text("Delete",)
+                            Text("Delete", color = MaterialTheme.colorScheme.onSecondaryContainer)
                         }
                     }
                     Button(

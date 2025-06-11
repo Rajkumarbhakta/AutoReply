@@ -10,6 +10,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -56,13 +58,23 @@ fun AutoReplyRulesScreen(
                     containerColor = Color.Transparent
                 ),
                 actions = {
-                    IconButton(onClick = {
+                    Button(onClick = {
                         navController.navigate(NavigationRoutes.AddEditAutoReply())
-                    }) {
-                        Icon(
-                            imageVector = Icons.Default.Add,
-                            contentDescription = "Add Rule",
+                    },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.Transparent,
+                            contentColor = MaterialTheme.colorScheme.onBackground
                         )
+                        ) {
+                        Row (
+                            verticalAlignment = Alignment.CenterVertically
+                        ){
+                            Icon(
+                                imageVector = Icons.Default.Add,
+                                contentDescription = "Add Rule",
+                            )
+                            Text("Add")
+                        }
                     }
                 }
             )

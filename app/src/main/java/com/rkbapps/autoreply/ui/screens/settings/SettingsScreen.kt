@@ -22,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -29,6 +30,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.rkbapps.autoreply.navigation.NavigationRoutes
 import com.rkbapps.autoreply.ui.theme.surfaceColor
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -37,6 +39,8 @@ fun SettingsScreen(
     navController: NavHostController,
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
+
+    val uriHandler = LocalUriHandler.current
 
     var isDark = viewModel.darkTheme.collectAsStateWithLifecycle()
 
@@ -108,14 +112,18 @@ fun SettingsScreen(
                 )
             }
             item {
-                SettingsCard(title = "Help Center")
+                SettingsCard(title = "Help Center"){
+                    navController.navigate(NavigationRoutes.HelpCenter)
+                }
             }
             item {
-                SettingsCard(title = "Contact Us")
+                SettingsCard(title = "Contact Us"){
+                    uriHandler.openUri("mailto:contact@rkbapps.in")
+                }
             }
-            item {
+            /*item {
                 SettingsCard(title = "FAQs")
-            }
+            }*/
             item {
                 Text(
                     text = "About",
@@ -131,7 +139,7 @@ fun SettingsScreen(
                 SettingsCard(title = "Privacy Policy")
             }
             item {
-                SettingsCard(title = "App Version", subtitle = "1.2.3")
+                SettingsCard(title = "App Version", subtitle = viewModel.appVersion)
             }
 
 

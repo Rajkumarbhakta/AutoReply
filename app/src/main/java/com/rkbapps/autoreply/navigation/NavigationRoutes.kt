@@ -1,5 +1,6 @@
 package com.rkbapps.autoreply.navigation
 
+import androidx.appcompat.widget.DialogTitle
 import kotlinx.serialization.Serializable
 
 sealed class NavigationRoutes{
@@ -19,5 +20,14 @@ sealed class NavigationRoutes{
     data object ChooseContact: NavigationRoutes()
     @Serializable
     data object ManageSchedule: NavigationRoutes()
+
+    @Serializable
+    data object HelpCenter: NavigationRoutes()
+
+    @Serializable
+    data class ShowHtmlText(
+        val title: String,
+        val htmlText: String
+    ): NavigationRoutes()
 
 }

@@ -4,9 +4,12 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.toRoute
 import com.rkbapps.autoreply.navigation.NavigationRoutes.AddEditAutoReply
 import com.rkbapps.autoreply.navigation.NavigationRoutes.Home
+import com.rkbapps.autoreply.ui.screens.ShowHtmlTextScreen
 import com.rkbapps.autoreply.ui.screens.addeditautoreply.addEdit.AddEditAutoReplyScreen
+import com.rkbapps.autoreply.ui.screens.help_center.HelpCenterScreen
 import com.rkbapps.autoreply.ui.screens.history.SentAutoRepliesScreen
 import com.rkbapps.autoreply.ui.screens.home.HomeScreen
 import com.rkbapps.autoreply.ui.screens.rules.AutoReplyRulesScreen
@@ -30,5 +33,16 @@ fun MainNavGraph(navController: NavHostController) {
         composable<NavigationRoutes.Sent> {
             SentAutoRepliesScreen(navController = navController)
         }
+        composable<NavigationRoutes.HelpCenter> {
+            HelpCenterScreen(navController)
+        }
+        composable<NavigationRoutes.ShowHtmlText> {
+            val data = it.toRoute<NavigationRoutes.ShowHtmlText>()
+            ShowHtmlTextScreen(
+                navController = navController,
+                data = data
+            )
+        }
+
     }
 }
