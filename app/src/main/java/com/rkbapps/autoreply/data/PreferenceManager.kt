@@ -18,12 +18,11 @@ import javax.inject.Singleton
 class PreferenceManager @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
+    private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = context.packageName)
+
     companion object {
-        val IS_SMART_REPLY_ENABLED = booleanPreferencesKey("is_smart_reply_enabled")
         val IS_DARK_THEME_ENABLED = booleanPreferencesKey("is_dark_theme_enabled")
     }
-
-    val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = context.packageName)
 
     val isDarkThemeEnabledFlow: Flow<Boolean> = context.dataStore.data
         .catch { emit(emptyPreferences()) }
