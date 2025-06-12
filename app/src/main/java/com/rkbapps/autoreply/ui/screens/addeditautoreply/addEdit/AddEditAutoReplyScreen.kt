@@ -67,7 +67,6 @@ import com.rkbapps.autoreply.ui.screens.addeditautoreply.choose_contact.ChooseCo
 import com.rkbapps.autoreply.ui.screens.addeditautoreply.schedule.ManageScheduleScreen
 import com.rkbapps.autoreply.ui.theme.primaryColor
 import com.rkbapps.autoreply.ui.theme.secondaryColor
-import com.rkbapps.autoreply.ui.theme.surfaceColor
 import com.rkbapps.autoreply.utils.ChooseContactType
 import com.rkbapps.autoreply.utils.ReplyType
 import kotlinx.coroutines.Dispatchers
@@ -92,10 +91,10 @@ fun AddEditAutoReplyScreen(
             )
         }
         composable<NavigationRoutes.ChooseContact> {
-            ChooseContactScreen(navController = navControllerAddEdit,viewModel = viewModel)
+            ChooseContactScreen(navController = navControllerAddEdit, viewModel = viewModel)
         }
         composable<NavigationRoutes.ManageSchedule> {
-            ManageScheduleScreen(navController = navControllerAddEdit,viewModel = viewModel)
+            ManageScheduleScreen(navController = navControllerAddEdit, viewModel = viewModel)
         }
     }
 }
@@ -140,7 +139,7 @@ fun AddEditScreen(
         },
     ) { innerPadding ->
 
-        if (isDeleteAlertDialogOpen.value){
+        if (isDeleteAlertDialogOpen.value) {
             AlertDialog(
                 onDismissRequest = { isDeleteAlertDialogOpen.value = false },
                 title = { Text("Delete Rule") },
@@ -167,16 +166,19 @@ fun AddEditScreen(
         }
 
 
-        LaunchedEffect(ruleAddUpdateStatus.isError,ruleAddUpdateStatus.data) {
-            when{
-                ruleAddUpdateStatus.isError->{
-                    withContext (Dispatchers.Main){
+        LaunchedEffect(ruleAddUpdateStatus.isError, ruleAddUpdateStatus.data) {
+            when {
+                ruleAddUpdateStatus.isError -> {
+                    withContext(Dispatchers.Main) {
                         Toast.makeText(
-                            context, ruleAddUpdateStatus.message ?: "Something went wrong", Toast.LENGTH_SHORT
+                            context,
+                            ruleAddUpdateStatus.message ?: "Something went wrong",
+                            Toast.LENGTH_SHORT
                         ).show()
                     }
                 }
-                ruleAddUpdateStatus.data!=null->{
+
+                ruleAddUpdateStatus.data != null -> {
                     withContext(Dispatchers.Main) {
                         Toast.makeText(
                             context, "Rule saved successfully", Toast.LENGTH_SHORT
@@ -212,7 +214,7 @@ fun AddEditScreen(
                 }
             }
             item {
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp)){
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text("Trigger Condition", style = MaterialTheme.typography.titleMedium)
                     LazyRow(
                         modifier = Modifier.fillMaxWidth(),
@@ -250,9 +252,9 @@ fun AddEditScreen(
             }
 
             item {
-                val text = if (rule.value.delay==0L) "" else rule.value.delay.toString()
+                val text = if (rule.value.delay == 0L) "" else rule.value.delay.toString()
                 CommonTextField(
-                    text =  text,
+                    text = text,
                     labelText = "Delay Before Reply",
                     placeholderText = "Enter delay in milliseconds",
                     maxLines = 1,
@@ -353,10 +355,10 @@ fun AddEditScreen(
             item {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = if(data==null) Arrangement.End  else Arrangement.SpaceBetween,
+                    horizontalArrangement = if (data == null) Arrangement.End else Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    if (data!=null){
+                    if (data != null) {
                         Button(
                             onClick = {
                                 isDeleteAlertDialogOpen.value = true
@@ -472,6 +474,7 @@ fun TargetAudienceItems(
         )
     }
 }
+
 @Composable
 fun ConditionItem(
     modifier: Modifier = Modifier,

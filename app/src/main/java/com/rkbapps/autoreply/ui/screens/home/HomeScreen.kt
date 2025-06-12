@@ -156,7 +156,7 @@ fun HomeScreen(navController: NavHostController, viewModel: HomeScreenViewModel 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopBar(modifier: Modifier = Modifier) {
+fun TopBar() {
     TopAppBar(
         title = {
             Text(stringResource(id = R.string.app_name))

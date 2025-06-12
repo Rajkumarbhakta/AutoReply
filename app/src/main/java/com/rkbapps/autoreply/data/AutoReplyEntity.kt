@@ -31,12 +31,13 @@ data class ReplySchedule(
 data class Time(
     val hour: Int,
     val minute: Int
-){
+) {
     fun toMinutes(): Int = hour * 60 + minute
 }
 
 enum class DaysOfWeek {
     MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY;
+
     companion object {
         fun fromCalendarDay(calendarDay: Int): DaysOfWeek {
             return when (calendarDay) {

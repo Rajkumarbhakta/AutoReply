@@ -3,9 +3,6 @@ package com.rkbapps.autoreply.ui.screens.home
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.gson.Gson
-import com.rkbapps.autoreply.data.PreferenceManager
-import com.rkbapps.autoreply.utils.ReplyType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -18,7 +15,7 @@ import javax.inject.Inject
 class HomeScreenViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val repository: HomeScreenRepository,
-): ViewModel() {
+) : ViewModel() {
 
     val isServiceRunning = repository.isServiceRunning
 
@@ -35,10 +32,11 @@ class HomeScreenViewModel @Inject constructor(
         }
     }
 
-    fun startService(){
+    fun startService() {
         repository.startService(context = context)
     }
-    fun stopService(){
+
+    fun stopService() {
         repository.stopService(context = context)
     }
 

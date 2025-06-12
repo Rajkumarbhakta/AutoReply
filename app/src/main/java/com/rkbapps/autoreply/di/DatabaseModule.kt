@@ -34,7 +34,7 @@ object DatabaseModule {
 
     @Provides
     @Singleton
-    fun provideGson(): Gson{
+    fun provideGson(): Gson {
         return GsonBuilder().create()
     }
 

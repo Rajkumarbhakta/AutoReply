@@ -31,7 +31,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.rkbapps.autoreply.navigation.NavigationRoutes
-import com.rkbapps.autoreply.ui.theme.surfaceColor
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -58,7 +57,9 @@ fun SettingsScreen(
     ) { innerPadding ->
 
         LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
             contentPadding = innerPadding
         ) {
@@ -112,12 +113,12 @@ fun SettingsScreen(
                 )
             }
             item {
-                SettingsCard(title = "Help Center"){
+                SettingsCard(title = "Help Center") {
                     navController.navigate(NavigationRoutes.HelpCenter)
                 }
             }
             item {
-                SettingsCard(title = "Contact Us"){
+                SettingsCard(title = "Contact Us") {
                     uriHandler.openUri("mailto:contact@rkbapps.in")
                 }
             }

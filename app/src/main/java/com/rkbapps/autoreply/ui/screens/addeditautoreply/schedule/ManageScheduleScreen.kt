@@ -35,7 +35,6 @@ import com.rkbapps.autoreply.data.ReplySchedule
 import com.rkbapps.autoreply.data.Time
 import com.rkbapps.autoreply.ui.composables.CommonTimePicker
 import com.rkbapps.autoreply.ui.screens.addeditautoreply.AddEditAutoReplyScreenViewModel
-import com.rkbapps.autoreply.ui.theme.surfaceColor
 
 
 @OptIn(ExperimentalMaterial3Api::class)

@@ -33,13 +33,13 @@ import java.util.Locale
 @Composable
 fun CommonTimePicker(
     modifier: Modifier = Modifier,
-    pickedTime : Time? = null,
+    pickedTime: Time? = null,
     labelText: String,
-    onTimeChange: (hour:Int,minute:Int) -> Unit = {_,_->},
+    onTimeChange: (hour: Int, minute: Int) -> Unit = { _, _ -> },
 ) {
     val isTimePickerVisible = remember { mutableStateOf(false) }
 
-    if (isTimePickerVisible.value){
+    if (isTimePickerVisible.value) {
         TimePickerDialog(
             onDismissRequest = { isTimePickerVisible.value = false },
             listener = { state ->
@@ -53,7 +53,10 @@ fun CommonTimePicker(
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Text(labelText, style = MaterialTheme.typography.titleMedium)
         TextField(
-            value = if (pickedTime==null) "" else hourMinuteToString(pickedTime.hour, pickedTime.minute),
+            value = if (pickedTime == null) "" else hourMinuteToString(
+                pickedTime.hour,
+                pickedTime.minute
+            ),
             enabled = false,
             onValueChange = { },
             colors = TextFieldDefaults.colors(

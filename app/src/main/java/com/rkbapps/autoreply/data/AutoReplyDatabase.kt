@@ -6,6 +6,6 @@ import androidx.room.TypeConverters
 
 @Database(entities = [AutoReplyEntity::class], version = 1, exportSchema = false)
 @TypeConverters(Converters::class)
-abstract class AutoReplyDatabase: RoomDatabase() {
+abstract class AutoReplyDatabase : RoomDatabase() {
     abstract val dao: AutoReplyDao
 }

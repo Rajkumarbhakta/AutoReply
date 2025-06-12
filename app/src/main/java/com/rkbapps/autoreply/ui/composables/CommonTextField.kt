@@ -55,7 +55,7 @@ fun CommonTextField(
             },
             trailingIcon = {
                 trailingText?.let {
-                    Text(text = it,)
+                    Text(text = it)
                 }
             }
 

@@ -9,13 +9,13 @@ import android.app.Service
 import android.content.Intent
 import android.os.Build
 import android.os.IBinder
-import com.rkbapps.autoreply.R
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
+import androidx.core.app.ServiceCompat.stopForeground
+import com.rkbapps.autoreply.R
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import androidx.core.app.ServiceCompat.stopForeground
 
 class KeepAliveService : Service() {
 
@@ -25,7 +25,6 @@ class KeepAliveService : Service() {
         private val _isRunning = MutableStateFlow(false)
         val isRunning = _isRunning.asStateFlow()
     }
-
 
 
     override fun onCreate() {
@@ -76,7 +75,11 @@ class KeepAliveService : Service() {
 
         // Create a Notification Channel for Android O+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(channelId, "Keep Alive Service", NotificationManager.IMPORTANCE_LOW)
+            val channel = NotificationChannel(
+                channelId,
+                "Keep Alive Service",
+                NotificationManager.IMPORTANCE_LOW
+            )
             notificationManager?.createNotificationChannel(channel)
         }
 
@@ -90,15 +93,14 @@ class KeepAliveService : Service() {
         )
 
         return NotificationCompat.Builder(this, channelId)
-            .setContentTitle("AutoReply Running")
-            .setContentText("Listening for messages...")
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setContentTitle("Auto Reply is running")
+            .setContentText("The service is running to ensure auto-reply functionality remains active.")
+            .setSmallIcon(R.drawable.notification_icon)
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .addAction(android.R.drawable.ic_delete, "Stop", stopPendingIntent) // Stop action
             .setAutoCancel(false) // Allow dismissal
             .build()
     }
-
 
 
     private fun restartService() {

@@ -7,12 +7,8 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.core.content.ContextCompat
 import com.rkbapps.autoreply.data.AutoReplyDao
-import com.rkbapps.autoreply.data.AutoReplyEntity
 import com.rkbapps.autoreply.manager.PermissionManager
 import com.rkbapps.autoreply.services.KeepAliveService
-import com.rkbapps.autoreply.utils.UiState
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import javax.inject.Inject
 
 class HomeScreenRepository @Inject constructor(
@@ -29,7 +25,6 @@ class HomeScreenRepository @Inject constructor(
     suspend fun updateRuleActiveStatus(id: Int, isActive: Boolean) {
         dataBase.updateAutoReplyActiveStatus(id, isActive)
     }
-
 
 
     fun startService(context: Context) {
@@ -59,9 +54,8 @@ class HomeScreenRepository @Inject constructor(
 
     fun requestNotificationPermission() = permissionManager.requestNotificationPermission()
 
-    fun isNotificationListenPermissionEnable(): Boolean = permissionManager.isNotificationPermissionGranted()
-
-
+    fun isNotificationListenPermissionEnable(): Boolean =
+        permissionManager.isNotificationPermissionGranted()
 
 
 }

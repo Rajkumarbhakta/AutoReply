@@ -10,7 +10,6 @@ import android.service.notification.StatusBarNotification
 import android.util.Log
 import com.rkbapps.autoreply.data.AutoReplyDao
 import com.rkbapps.autoreply.data.AutoReplyEntity
-import com.rkbapps.autoreply.data.PreferenceManager
 import com.rkbapps.autoreply.services.KeepAliveService
 import com.rkbapps.autoreply.services.RestartServiceJob
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -28,10 +27,8 @@ import javax.inject.Singleton
 @Singleton
 class NotificationRepository @Inject constructor(
     @ApplicationContext private val applicationContext: Context,
-    private val dataBase: AutoReplyDao,
+    dataBase: AutoReplyDao,
     private val databaseReplyManager: DatabaseReplyManager,
-    private val smartReplyManager: SmartReplyManager,
-    private val preferenceManager: PreferenceManager
 ) {
 
     private val coroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
@@ -44,20 +41,10 @@ class NotificationRepository @Inject constructor(
     )
 
     companion object {
-        private val whatsappPackageName = listOf("com.whatsapp.w4b", "com.whatsapp")
+        private val supportedAppPackageName = listOf("com.whatsapp.w4b", "com.whatsapp")
         private val handledNotifications = mutableSetOf<String>()
     }
 
-    var isSmartReplyEnabled = false
-        private set
-
-    init {
-        coroutineScope.launch {
-            preferenceManager.isSmartReplyEnableFlow.collect {
-                isSmartReplyEnabled = it
-            }
-        }
-    }
 
     fun onDestroy() {
         coroutineScope.cancel() // Clean up when the class is no longer needed
@@ -73,10 +60,9 @@ class NotificationRepository @Inject constructor(
             Log.d("AutoReply", "Service is busy, skipping notification: $data")
             return
         }
-        if (whatsappPackageName.contains(data.packageName) && KeepAliveService.isRunning.value) {
+        if (supportedAppPackageName.contains(data.packageName) && KeepAliveService.isRunning.value) {
             isBusy = true
             Log.d("NotificationListenerService", "onNotificationPosted : $data")
-            val extras = notification.notification.extras
             val title = data.title // Sender name
             val text = data.text // Message content
             if (!title.isNullOrBlank() && !text.isNullOrBlank()) {
@@ -92,7 +78,6 @@ class NotificationRepository @Inject constructor(
                 // If it's a personal message (not a group), reply
 
                 coroutineScope.launch {
-                    val isGroupMessage = title.contains(": ")
                     val rule = findRule(autoReplyList.value, text)
                     Log.d("AutoReply", "Rule found: ${rule?.trigger} - ${rule?.reply}")
                     if (rule != null) {

@@ -42,7 +42,7 @@ fun ShowHtmlTextScreen(
                 ),
                 navigationIcon = {
                     IconButton(
-                        onClick = {navController.navigateUp()}
+                        onClick = { navController.navigateUp() }
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Default.ArrowBack,

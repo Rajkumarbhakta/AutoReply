@@ -10,7 +10,6 @@ import android.os.Parcelable
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.RemoteInput
-import java.util.ArrayList
 
 class Action : Parcelable {
     private val text: String?
@@ -48,12 +47,12 @@ class Action : Parcelable {
 
     @Throws(PendingIntent.CanceledException::class)
     fun sendReply(context: Context?, msg: String?) {
-        Log.d("Action::sendReply","inside sendReply")
+        Log.d("Action::sendReply", "inside sendReply")
         val intent = Intent()
         val bundle = Bundle()
         val actualInputs = ArrayList<RemoteInput>()
         for (input in remoteInputs) {
-            Log.d("Action::sendReply","RemoteInput: ${input.label}",)
+            Log.d("Action::sendReply", "RemoteInput: ${input.label}")
             bundle.putCharSequence(input.resultKey, msg)
             val builder = RemoteInput.Builder(input.resultKey.toString())
             builder.setLabel(input.label)
@@ -81,8 +80,6 @@ class Action : Parcelable {
             return arrayOfNulls(size)
         }
     }
-
-
 
 
 }

@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import com.rkbapps.autoreply.services.KeepAliveService
-import com.rkbapps.autoreply.services.MyNotificationListenerService
 
 class RestartReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {

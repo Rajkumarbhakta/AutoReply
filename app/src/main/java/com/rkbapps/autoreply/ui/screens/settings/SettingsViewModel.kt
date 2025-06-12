@@ -1,7 +1,6 @@
 package com.rkbapps.autoreply.ui.screens.settings
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import com.rkbapps.autoreply.BuildConfig
 import com.rkbapps.autoreply.data.PreferenceManager
@@ -14,7 +13,7 @@ import javax.inject.Inject
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val preferenceManager: PreferenceManager
-): ViewModel() {
+) : ViewModel() {
 
     val darkTheme = preferenceManager.isDarkThemeEnabledFlow.stateIn(
         viewModelScope,
@@ -24,7 +23,7 @@ class SettingsViewModel @Inject constructor(
 
     val appVersion = BuildConfig.VERSION_NAME
 
-    fun changeDarkThemeStatus(status:Boolean){
+    fun changeDarkThemeStatus(status: Boolean) {
         viewModelScope.launch {
             preferenceManager.changeDarkThemeStatus(status)
         }

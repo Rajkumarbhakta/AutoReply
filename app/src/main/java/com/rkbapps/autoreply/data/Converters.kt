@@ -6,17 +6,7 @@ import com.google.gson.reflect.TypeToken
 import com.rkbapps.autoreply.models.Contact
 
 class Converters {
-
     val gson = Gson()
-    @TypeConverter
-    fun fromStringList(list: List<String>): String {
-        return gson.toJson(list)
-    }
-    @TypeConverter
-    fun toStringList(json: String): List<String> {
-        val type = object : TypeToken<List<String>>() {}.type
-        return gson.fromJson(json, type)
-    }
 
     @TypeConverter
     fun fromReplySchedule(value: ReplySchedule?): String? {
@@ -28,42 +18,11 @@ class Converters {
         return value?.let { gson.fromJson(it, ReplySchedule::class.java) }
     }
 
-
-    @TypeConverter
-    fun fromReplyScheduleList(value: List<ReplySchedule>): String {
-        return gson.toJson(value)
-    }
-
-    @TypeConverter
-    fun toReplyScheduleList(value: String): List<ReplySchedule> {
-        val listType = object : TypeToken<List<ReplySchedule>>() {}.type
-        return gson.fromJson(value, listType)
-    }
-
-    @TypeConverter
-    fun fromDaysOfWeekList(value: List<DaysOfWeek>): String {
-        return gson.toJson(value)
-    }
-
-    @TypeConverter
-    fun toDaysOfWeekList(value: String): List<DaysOfWeek> {
-        val listType = object : TypeToken<List<DaysOfWeek>>() {}.type
-        return gson.fromJson(value, listType)
-    }
-
-    @TypeConverter
-    fun fromTime(value: Time?): String? {
-        return value?.let { gson.toJson(it) }
-    }
-    @TypeConverter
-    fun toTime(value: String?): Time? {
-        return value?.let { gson.fromJson(it, Time::class.java) }
-    }
-
     @TypeConverter
     fun fromContactList(value: List<Contact>): String {
         return gson.toJson(value)
     }
+
     @TypeConverter
     fun toContactList(value: String): List<Contact> {
         val listType = object : TypeToken<List<Contact>>() {}.type

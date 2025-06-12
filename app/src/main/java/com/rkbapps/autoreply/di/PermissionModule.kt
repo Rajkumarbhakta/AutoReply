@@ -18,7 +18,7 @@ class PermissionModule {
     @Singleton
     fun providePermissionManager(
         @ApplicationContext context: Context
-    ): PermissionManager{
-        return PermissionManagerImpl(context);
+    ): PermissionManager {
+        return PermissionManagerImpl(context)
     }
 }

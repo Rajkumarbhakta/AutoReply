@@ -23,7 +23,6 @@ val secondaryContainerDark = Color(0xff2B3640)
 val secondaryContainer = Color(0xffEBEDF2)
 
 
-
 val surfaceColor = Color(0xFFFAFAFA)
 val surfaceColorDark = Color(0xff0F1A24)
 

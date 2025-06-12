@@ -10,7 +10,7 @@ object NotificationParser {
         val id = notification.id
         val title = notification.notification.extras.getString(Notification.EXTRA_TITLE)
         val text = notification.notification.extras.getString(Notification.EXTRA_TEXT)
-        val packageName=notification.packageName
+        val packageName = notification.packageName
         val subText = notification.notification.extras.getString(Notification.EXTRA_SUB_TEXT)
         val bigText = notification.notification.extras.getString(Notification.EXTRA_BIG_TEXT)
         val infoText = notification.notification.extras.getString(Notification.EXTRA_INFO_TEXT)
@@ -21,7 +21,7 @@ object NotificationParser {
             id = id,
             title = title,
             text = text,
-            packageName =packageName,
+            packageName = packageName,
             subText = subText,
             bigText = bigText,
             infoText = infoText,

@@ -57,16 +57,21 @@ class AddEditAutoReplyScreenRepository @Inject constructor(
         contacts.emit(filteredContacts)
     }
 
-    fun updateRule(rule: AutoReplyEntity) { this.rule.value = rule }
+    fun updateRule(rule: AutoReplyEntity) {
+        this.rule.value = rule
+    }
 
-    suspend fun searchContacts(query: String,type: ChooseContactType) {
+    suspend fun searchContacts(query: String, type: ChooseContactType) {
         val availableContacts = contacts.value
-        if (query.isNotBlank() && query.isNotEmpty()){
+        if (query.isNotBlank() && query.isNotEmpty()) {
             val filteredContacts = availableContacts.filter { contact ->
-                contact.name?.contains(query, ignoreCase = true) == true || contact.phoneNumber.contains(query, ignoreCase = true)
+                contact.name?.contains(
+                    query,
+                    ignoreCase = true
+                ) == true || contact.phoneNumber.contains(query, ignoreCase = true)
             }
             contacts.value = filteredContacts
-        }else{
+        } else {
             when (type) {
                 ChooseContactType.INCLUDE -> loadIncludeContacts()
                 ChooseContactType.EXCLUDE -> loadExcludeContacts()
@@ -95,18 +100,34 @@ class AddEditAutoReplyScreenRepository @Inject constructor(
         _ruleAddUpdateStatus.emit(UiState(isLoading = true))
         try {
             if (autoReplyEntity.name.isBlank()) {
-                _ruleAddUpdateStatus.emit(UiState(isError = true, message = "Rule name cannot be empty"))
+                _ruleAddUpdateStatus.emit(
+                    UiState(
+                        isError = true,
+                        message = "Rule name cannot be empty"
+                    )
+                )
                 return
             }
             if (autoReplyEntity.reply.isBlank()) {
-                _ruleAddUpdateStatus.emit(UiState(isError = true, message = "Send message cannot be empty"))
+                _ruleAddUpdateStatus.emit(
+                    UiState(
+                        isError = true,
+                        message = "Send message cannot be empty"
+                    )
+                )
                 return
             }
-            if (autoReplyEntity.trigger.isBlank()) { _ruleAddUpdateStatus.emit(UiState(isError = true, message = "Receive message cannot be empty"))
+            if (autoReplyEntity.trigger.isBlank()) {
+                _ruleAddUpdateStatus.emit(
+                    UiState(
+                        isError = true,
+                        message = "Receive message cannot be empty"
+                    )
+                )
                 return
             }
 
-            when(addEditType){
+            when (addEditType) {
                 AddEditType.ADD -> autoReplyDao.insertAutoReply(autoReplyEntity)
                 AddEditType.EDIT -> autoReplyDao.updateAutoReply(autoReplyEntity)
             }

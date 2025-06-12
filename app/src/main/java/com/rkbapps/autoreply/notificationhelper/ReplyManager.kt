@@ -5,25 +5,21 @@ import android.util.Log
 import com.google.mlkit.nl.smartreply.SmartReply
 import com.google.mlkit.nl.smartreply.SmartReplySuggestionResult
 import com.google.mlkit.nl.smartreply.TextMessage
-import com.rkbapps.autoreply.data.AutoReplyDao
 import com.rkbapps.autoreply.data.AutoReplyEntity
 import com.rkbapps.autoreply.data.DaysOfWeek
 import com.rkbapps.autoreply.data.MatchingType
 import com.rkbapps.autoreply.data.Time
 import com.rkbapps.autoreply.utils.ReplyType
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import java.util.UUID
 import javax.inject.Inject
 
 interface ReplyManager {
-    fun generateReply(trigger: String,title: String,rule: AutoReplyEntity): String?
+    fun generateReply(trigger: String, title: String, rule: AutoReplyEntity): String?
 }
 
 open class DatabaseReplyManager @Inject constructor() : ReplyManager {
 
-    fun getCurrentTime(): Time{
+    fun getCurrentTime(): Time {
         val calendar = Calendar.getInstance()
         val currentHour: Int = calendar.get(Calendar.HOUR_OF_DAY) // 24-hour format
         val currentMinute: Int = calendar.get(Calendar.MINUTE)
@@ -32,11 +28,14 @@ open class DatabaseReplyManager @Inject constructor() : ReplyManager {
             minute = currentMinute
         )
     }
+
     fun getCurrentDayOfWeekCalendar(): DaysOfWeek {
         val calendar = Calendar.getInstance()
-        val dayOfWeekInt = calendar.get(Calendar.DAY_OF_WEEK) // SUNDAY is 1, MONDAY is 2, ..., SATURDAY is 7
+        val dayOfWeekInt =
+            calendar.get(Calendar.DAY_OF_WEEK) // SUNDAY is 1, MONDAY is 2, ..., SATURDAY is 7
         return DaysOfWeek.fromCalendarDay(dayOfWeekInt)
     }
+
     fun isCurrentTimeBetween(currentTime: Time, startTime: Time, endTime: Time): Boolean {
         val currentTimeInMinutes = currentTime.toMinutes()
         val startTimeInMinutes = startTime.toMinutes()
@@ -81,7 +80,10 @@ open class DatabaseReplyManager @Inject constructor() : ReplyManager {
         return null
     }
 
-    private fun isMatchingTargetAudience(targetAudience: ReplyType, isGroupMessage: Boolean): Boolean {
+    private fun isMatchingTargetAudience(
+        targetAudience: ReplyType,
+        isGroupMessage: Boolean
+    ): Boolean {
         return when (targetAudience) {
             ReplyType.INDIVIDUAL -> !isGroupMessage
             ReplyType.GROUP -> isGroupMessage
@@ -90,15 +92,18 @@ open class DatabaseReplyManager @Inject constructor() : ReplyManager {
 
     }
 
-    private fun checkContactCondition(rule: AutoReplyEntity,title: String): Boolean{
+    private fun checkContactCondition(rule: AutoReplyEntity, title: String): Boolean {
         if (title.contains(":")) return true
-        if (rule.replyType== ReplyType.INDIVIDUAL){
+        if (rule.replyType == ReplyType.INDIVIDUAL) {
             val includedContacts = rule.includeContacts
             val excludedContacts = rule.excludeContacts
             if (includedContacts.isNotEmpty()) {
                 // Check if the sender is in the included contacts
                 val isIncluded = includedContacts.any { contact ->
-                    title.contains(contact.name?:"", ignoreCase = true) || title.contains(contact.phoneNumber, ignoreCase = true)
+                    title.contains(
+                        contact.name ?: "",
+                        ignoreCase = true
+                    ) || title.contains(contact.phoneNumber, ignoreCase = true)
                 }
                 if (!isIncluded) return false
             }
@@ -106,13 +111,16 @@ open class DatabaseReplyManager @Inject constructor() : ReplyManager {
             if (excludedContacts.isNotEmpty()) {
                 // Check if the sender is in the excluded contacts
                 val isExcluded = excludedContacts.any { contact ->
-                    title.contains(contact.name?:"", ignoreCase = true) || title.contains(contact.phoneNumber, ignoreCase = true)
+                    title.contains(
+                        contact.name ?: "",
+                        ignoreCase = true
+                    ) || title.contains(contact.phoneNumber, ignoreCase = true)
                 }
                 if (isExcluded) return false
             }
             // If no contacts are specified, we assume the rule applies to all individual messages
             return true
-        }else{
+        } else {
             return true
         }
 
@@ -168,6 +176,7 @@ class SmartReplyManager @Inject constructor() : ReplyManager {
                     Log.d("SmartReplyManager", "Not supported language")
                     reply = null
                 }
+
                 SmartReplySuggestionResult.STATUS_NO_REPLY -> {
                     Log.d("SmartReplyManager", "No reply")
                     reply = null

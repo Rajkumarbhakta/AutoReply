@@ -2,7 +2,6 @@ package com.rkbapps.autoreply.ui.screens.help_center
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -12,7 +11,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.Book
 import androidx.compose.material.icons.outlined.QuestionMark
-import androidx.compose.material.icons.outlined.Security
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -33,8 +31,8 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.rkbapps.autoreply.navigation.NavigationRoutes
-import com.rkbapps.autoreply.ui.screens.help_center.details_text.HOW_IT_WORKS_TECHNICAL
 import com.rkbapps.autoreply.ui.screens.help_center.details_text.HOW_IT_WORKS
+import com.rkbapps.autoreply.ui.screens.help_center.details_text.HOW_IT_WORKS_TECHNICAL
 import com.rkbapps.autoreply.ui.screens.help_center.details_text.HOW_TO_USE
 import com.rkbapps.autoreply.ui.theme.AutoReplyTheme
 
@@ -99,11 +97,13 @@ fun HelpCenterScreen(navController: NavHostController) {
 
 
 @Composable
-fun GridItem(modifier: Modifier = Modifier,
+fun GridItem(
+    modifier: Modifier = Modifier,
     data: HelpCenterData,
-    onClick:()->Unit) {
+    onClick: () -> Unit
+) {
     OutlinedCard(
-    onClick = onClick
+        onClick = onClick
     ) {
         Row(
             modifier = modifier
@@ -114,9 +114,11 @@ fun GridItem(modifier: Modifier = Modifier,
             horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             Icon(data.icon, contentDescription = "Security Icon")
-            Text(data.title, style = MaterialTheme.typography.titleLarge.copy(
-                fontWeight = FontWeight.Bold
-            ))
+            Text(
+                data.title, style = MaterialTheme.typography.titleLarge.copy(
+                    fontWeight = FontWeight.Bold
+                )
+            )
         }
     }
 }
@@ -132,9 +134,9 @@ fun HelpCenterScreenPreview() {
 }
 
 data class HelpCenterData(
-    val title:String,
+    val title: String,
     val icon: ImageVector,
-    val detailDescription:String
+    val detailDescription: String
 )
 
 private val data = listOf(

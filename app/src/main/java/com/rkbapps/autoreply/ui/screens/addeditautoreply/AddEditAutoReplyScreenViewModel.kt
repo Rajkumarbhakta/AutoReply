@@ -9,7 +9,6 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
-import com.google.gson.Gson
 import com.rkbapps.autoreply.data.AutoReplyEntity
 import com.rkbapps.autoreply.navigation.NavigationRoutes
 import com.rkbapps.autoreply.utils.ChooseContactType
@@ -22,7 +21,6 @@ import javax.inject.Inject
 class AddEditAutoReplyScreenViewModel @Inject constructor(
     private val repository: AddEditAutoReplyScreenRepository,
     saveStateHandle: SavedStateHandle,
-    private val gson: Gson
 ) : ViewModel() {
 
     fun isContactPermissionGranted(context: Context): Boolean? {
@@ -80,7 +78,6 @@ class AddEditAutoReplyScreenViewModel @Inject constructor(
     }
 
 
-
     fun addNewAutoReply(
         autoReplyEntity: AutoReplyEntity,
         addEditType: AddEditType = if (data.id == null) AddEditType.ADD else AddEditType.EDIT
@@ -90,7 +87,7 @@ class AddEditAutoReplyScreenViewModel @Inject constructor(
         }
     }
 
-    fun deleteRule(id:Int?){
+    fun deleteRule(id: Int?) {
         id?.let {
             viewModelScope.launch(Dispatchers.IO) {
                 repository.deleteRule(it)

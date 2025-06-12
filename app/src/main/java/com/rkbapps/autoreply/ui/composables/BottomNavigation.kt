@@ -29,7 +29,7 @@ fun BottomNavigation(
 
     if (destination) {
         NavigationBar(
-            modifier=modifier
+            modifier = modifier
         ) {
             navigationItems.forEachIndexed { _, bottomNavigationItem ->
 

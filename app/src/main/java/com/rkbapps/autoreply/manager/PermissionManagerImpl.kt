@@ -5,29 +5,28 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
 import android.provider.Settings
+import androidx.core.net.toUri
 import com.rkbapps.autoreply.services.MyNotificationListenerService
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
-import androidx.core.net.toUri
 
 
 @Singleton
 class PermissionManagerImpl @Inject constructor(
     @ApplicationContext val context: Context,
-   // val appPrefs: AppPrefs
+    // val appPrefs: AppPrefs
 ) : PermissionManager {
 
     // Arguments taken from SettingsActivity from android source code.
     companion object {
-         const val EXTRA_SHOW_FRAGMENT_ARGUMENTS = ":settings:show_fragment_args"
-         const val EXTRA_FRAGMENT_ARG_KEY = ":settings:fragment_args_key"
-         const val EXTRA_SECURITY_LISTENER_NAME = "enabled_notification_listeners"
+        const val EXTRA_SHOW_FRAGMENT_ARGUMENTS = ":settings:show_fragment_args"
+        const val EXTRA_FRAGMENT_ARG_KEY = ":settings:fragment_args_key"
+        const val EXTRA_SECURITY_LISTENER_NAME = "enabled_notification_listeners"
     }
 
     override fun isNotificationPermissionGranted(): Boolean {
@@ -44,7 +43,8 @@ class PermissionManagerImpl @Inject constructor(
 
 
     override fun requestNotificationPermission() {
-        val name = ComponentName(context, MyNotificationListenerService::class.java).flattenToString()
+        val name =
+            ComponentName(context, MyNotificationListenerService::class.java).flattenToString()
         val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             Intent(Settings.ACTION_NOTIFICATION_LISTENER_DETAIL_SETTINGS).apply {
                 putExtra(Settings.EXTRA_NOTIFICATION_LISTENER_COMPONENT_NAME, name)

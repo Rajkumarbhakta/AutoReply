@@ -1,12 +1,11 @@
 package com.rkbapps.autoreply.notificationhelper
 
 
-
 import android.app.Notification
 import android.text.TextUtils
 import android.util.Log
 import androidx.core.app.NotificationCompat
-import java.util.*
+import java.util.Locale
 
 object NotificationUtils {
 
@@ -20,12 +19,12 @@ object NotificationUtils {
         return Action(action, packageName, true)
     }
 
-    fun getClickAction(n: Notification, text: String): Int?{
+    fun getClickAction(n: Notification, text: String): Int? {
         for (i in 0 until NotificationCompat.getActionCount(n)) {
             val action = NotificationCompat.getAction(n, i)
             Log.d("NotificationUtils", "Action = ${action?.title}")
             if (action != null) {
-                if (action.title.toString().equals(text, ignoreCase = true)){
+                if (action.title.toString().equals(text, ignoreCase = true)) {
                     return i
                 }
             }
@@ -36,7 +35,7 @@ object NotificationUtils {
     private fun getQuickReplyAction(n: Notification): NotificationCompat.Action? {
 
         Log.d("NotificationUtils", "Action count = ${NotificationCompat.getActionCount(n)}")
-        for (i in 0 until NotificationCompat.getActionCount(n)){
+        for (i in 0 until NotificationCompat.getActionCount(n)) {
             val action = NotificationCompat.getAction(n, i)
             if (action != null) {
                 Log.d("NotificationUtils", "Action = ${action.title}")

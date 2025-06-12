@@ -14,7 +14,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
@@ -28,7 +27,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -36,7 +34,6 @@ import androidx.navigation.NavHostController
 import com.rkbapps.autoreply.data.AutoReplyEntity
 import com.rkbapps.autoreply.navigation.NavigationRoutes
 import com.rkbapps.autoreply.ui.composables.CommonSearchBar
-import okhttp3.Route
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -58,17 +55,18 @@ fun AutoReplyRulesScreen(
                     containerColor = Color.Transparent
                 ),
                 actions = {
-                    Button(onClick = {
-                        navController.navigate(NavigationRoutes.AddEditAutoReply())
-                    },
+                    Button(
+                        onClick = {
+                            navController.navigate(NavigationRoutes.AddEditAutoReply())
+                        },
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Color.Transparent,
                             contentColor = MaterialTheme.colorScheme.onBackground
                         )
-                        ) {
-                        Row (
+                    ) {
+                        Row(
                             verticalAlignment = Alignment.CenterVertically
-                        ){
+                        ) {
                             Icon(
                                 imageVector = Icons.Default.Add,
                                 contentDescription = "Add Rule",
@@ -79,7 +77,7 @@ fun AutoReplyRulesScreen(
                 }
             )
         }
-    ) {innerPadding ->
+    ) { innerPadding ->
 
         LazyColumn(
             modifier = Modifier.padding(horizontal = 16.dp),
@@ -90,13 +88,14 @@ fun AutoReplyRulesScreen(
             item {
                 CommonSearchBar(
                     modifier = Modifier.fillMaxWidth(),
-                    query = searchQuery.value) {
+                    query = searchQuery.value
+                ) {
                     searchQuery.value = it
                     viewModel.updateQuery(it)
                 }
             }
 
-            if (rules.isEmpty()){
+            if (rules.isEmpty()) {
                 item {
                     Text(
                         "No rules found",
@@ -117,7 +116,7 @@ fun AutoReplyRulesScreen(
                     navController.navigate(NavigationRoutes.AddEditAutoReply(id = it))
                 }
             }
-            
+
         }
     }
 
@@ -129,7 +128,7 @@ fun RulesItem(
     modifier: Modifier = Modifier,
     rule: AutoReplyEntity,
     onSwitchChange: (Boolean) -> Unit = { /*TODO*/ },
-    onItemClick:(Int)-> Unit
+    onItemClick: (Int) -> Unit
 ) {
     Row(
         modifier = modifier

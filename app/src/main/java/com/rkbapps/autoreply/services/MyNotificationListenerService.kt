@@ -9,16 +9,11 @@ import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class MyNotificationListenerService @Inject constructor() : NotificationListenerService()  {
+class MyNotificationListenerService @Inject constructor() : NotificationListenerService() {
 
 
     @Inject
     lateinit var repository: NotificationRepository
-
-
-    override fun onCreate() {
-        super.onCreate()
-    }
 
     override fun onDestroy() {
         super.onDestroy()
@@ -29,7 +24,7 @@ class MyNotificationListenerService @Inject constructor() : NotificationListener
 
     override fun onListenerConnected() {
         super.onListenerConnected()
-        Log.d("NotificationListenerService","onListenerConnected")
+        Log.d("NotificationListenerService", "onListenerConnected")
     }
 
     override fun onListenerDisconnected() {
@@ -39,12 +34,12 @@ class MyNotificationListenerService @Inject constructor() : NotificationListener
 
 
     override fun onNotificationPosted(newNotification: StatusBarNotification) {
-        repository.manageOnNotificationPosted(this,newNotification)
+        repository.manageOnNotificationPosted(this, newNotification)
     }
 
 
     override fun onNotificationRemoved(removedNotification: StatusBarNotification) {
-        repository.manageOnNotificationRemoved(this,removedNotification)
+        repository.manageOnNotificationRemoved(this, removedNotification)
     }
 
 }

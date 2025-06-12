@@ -47,7 +47,6 @@ import coil3.compose.SubcomposeAsyncImage
 import com.rkbapps.autoreply.models.Contact
 import com.rkbapps.autoreply.ui.composables.CommonSearchBar
 import com.rkbapps.autoreply.ui.screens.addeditautoreply.AddEditAutoReplyScreenViewModel
-import com.rkbapps.autoreply.ui.theme.surfaceColor
 import com.rkbapps.autoreply.utils.ChooseContactType
 
 

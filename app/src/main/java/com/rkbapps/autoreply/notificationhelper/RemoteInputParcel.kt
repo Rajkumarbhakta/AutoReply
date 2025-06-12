@@ -57,7 +57,6 @@ class RemoteInputParcel : Parcelable {
     }
 
 
-
     companion object CREATOR : Parcelable.Creator<RemoteInputParcel> {
         override fun createFromParcel(parcel: Parcel): RemoteInputParcel {
             return RemoteInputParcel(parcel)
