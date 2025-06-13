@@ -96,9 +96,9 @@ class NotificationRepository @Inject constructor(
                 }
 
             }
+            isBusy = false
         }
     }
-
 
     fun getReplyMessage(message: String, title: String, rule: AutoReplyEntity): String? {
         return databaseReplyManager.generateReply(message, title, rule)

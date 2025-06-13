@@ -63,7 +63,11 @@ open class DatabaseReplyManager @Inject constructor() : ReplyManager {
         if (isMatchTargetAudience && isContactConditionMet) {
             if (rule.schedule == null) {
                 // If no schedule is set, we can generate a reply immediately
-                return getReplyMessage(rule.matchingType, rule.reply, trigger)
+                return getReplyMessage(matchingType = rule.matchingType,
+                    reply = rule.reply,
+                    ruleTrigger = rule.trigger,
+                    trigger = trigger
+                )
             } else {
                 val currentTime = getCurrentTime()
                 val currentDay = getCurrentDayOfWeekCalendar()
@@ -72,7 +76,19 @@ open class DatabaseReplyManager @Inject constructor() : ReplyManager {
                     val endTime = rule.schedule.endTime
                     val isValidTime = isCurrentTimeBetween(currentTime, startTime, endTime)
                     if (isValidTime && rule.schedule.daysOfWeek.contains(currentDay)) {
-                        return getReplyMessage(rule.matchingType, rule.reply, trigger)
+                        return getReplyMessage(matchingType = rule.matchingType,
+                            reply = rule.reply,
+                            ruleTrigger = rule.trigger,
+                            trigger = trigger
+                        )
+                    }
+                }else{
+                    if (rule.schedule.daysOfWeek.contains(currentDay)){
+                        return getReplyMessage(matchingType = rule.matchingType,
+                            reply = rule.reply,
+                            ruleTrigger = rule.trigger,
+                            trigger = trigger
+                        )
                     }
                 }
             }
@@ -129,10 +145,11 @@ open class DatabaseReplyManager @Inject constructor() : ReplyManager {
     private fun getReplyMessage(
         matchingType: MatchingType,
         reply: String,
+        ruleTrigger: String,
         trigger: String
     ): String? = when (matchingType) {
         MatchingType.CONTAINS -> {
-            if (trigger.contains(trigger, ignoreCase = true)) {
+            if (trigger.contains(ruleTrigger, ignoreCase = true)) {
                 reply
             } else {
                 null
@@ -140,7 +157,7 @@ open class DatabaseReplyManager @Inject constructor() : ReplyManager {
         }
 
         MatchingType.EXACT -> {
-            if (trigger.equals(trigger, ignoreCase = true)) {
+            if (trigger.equals(ruleTrigger, ignoreCase = true)) {
                 reply
             } else {
                 null
@@ -148,7 +165,7 @@ open class DatabaseReplyManager @Inject constructor() : ReplyManager {
         }
 
         MatchingType.STARTS_WITH -> {
-            if (trigger.startsWith(trigger, ignoreCase = true)) {
+            if (trigger.startsWith(ruleTrigger, ignoreCase = true)) {
                 reply
             } else {
                 null
